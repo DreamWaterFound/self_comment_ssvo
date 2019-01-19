@@ -1,0 +1,19 @@
+*.a
+*.so
+*~
+
+cmake_modules/FindDBoW3.cmake
+data/
+bin/
+lib/
+*build*/
+*install*/
+.idea/
+.vs/
+.vscode/
+
+# for logging
+*INFO*
+*WARNING*
+*ERROR*
+*FATAL*
