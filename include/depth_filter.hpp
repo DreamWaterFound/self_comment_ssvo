@@ -45,8 +45,8 @@ public:
     /**
      * @brief 插入帧? TODO 
      * 
-     * @param[in] frame     TODO
-     * @param[in] keyframe  TODO 
+     * @param[in] frame     TODO 当前帧
+     * @param[in] keyframe  TODO 参考的关键帧
      */
     void insertFrame(const Frame::Ptr &frame, const KeyFrame::Ptr keyframe = nullptr);
 

@@ -43,7 +43,7 @@ public:
         ATAN        = 1
     };
 
-    //TODO 为什么要加这个东西?
+    //TODO 为什么要加这个东西
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     //定义指向自己的智能指针类型

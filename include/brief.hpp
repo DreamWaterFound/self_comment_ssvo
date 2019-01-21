@@ -76,7 +76,7 @@ public:
     inline static Ptr create(float scale_factor, int nlevels)
     { return Ptr(new BRIEF(scale_factor, nlevels));}
 
-    //TODO 为什么要注释掉?
+    //TODO 为什么要注释掉? 不清楚
 //    bool checkBorder(const double x, const double y,const int level,const bool bottom_level);
 
 private:

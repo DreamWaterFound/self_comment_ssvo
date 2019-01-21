@@ -13,7 +13,7 @@
 
 #include "global.hpp"
 
-//REVIEW 整篇代码都没有看
+//REVIEW 整篇代码都没有看,就不一一添加了
 
 
 namespace ssvo

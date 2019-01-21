@@ -72,7 +72,7 @@ public:
      * 
      * @param[in] min_idx   什么的最小id TODO
      * @param[in] max_idx   什么的最大id TODO 
-     * @param[in] min_track 最少追踪数? TODO
+     * @param[in] min_track 最少追踪数的特征点的个数? TODO
      * @return int          TODO 
      */
     int checkTracking(const int min_idx, const int max_idx, const int min_track);

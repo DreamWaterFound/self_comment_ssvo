@@ -31,7 +31,7 @@ public:
      * 
      * @param[in] dataset_path          数据集的路径
      * @param[in] association_file      关联文件,TUM数据集特有的
-     * @param[in] with_ground_truth     存储了真值的文件? 
+     * @param[in] with_ground_truth     存储了真值的文件
      */
     TUMDataReader(const string &dataset_path, const string &association_file, const bool with_ground_truth = false):
         dataset_path_(dataset_path), association_file_(association_file)

@@ -97,7 +97,7 @@ public:
 
 private:
     /**
-     * @brief 创建并返回一个config类指针
+     * @brief 创建并返回一个 ssvo::Config 类指针
      * 
      * @return Config& 
      */

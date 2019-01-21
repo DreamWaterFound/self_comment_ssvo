@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/include",
+                "/home/guoqing/libraries/opencv_331/include",
+                "/home/guoqing/libraries/opencv_331/include/opencv",
+                "/home/guoqing/libraries/sophus_100/lib/cmake/Sophus/../../../include",
+                "/usr/local/include",
+                "/home/guoqing/libraries/eigen_3210/include/eigen3",
+                "/home/guoqing/libraries/ceres_ssvo/include",
+                "/home/guoqing/libraries/DBoW3_ssvo/include",
+                "/home/guoqing/libraries/Pangolin_050/lib/cmake/Pangolin/../../../include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+        }
+    ],
+    "version": 4
+}

@@ -12,7 +12,7 @@
 #define _SSVO_SYSTEM_HPP_
 
 
-//REVIEW 为啥师兄不把这些文件也写在 global.hpp 中嘞?
+//REVIEW 为啥师兄不把这些文件也写在 global.hpp 中嘞??
 #include "global.hpp"
 #include "frame.hpp"
 #include "keyframe.hpp"

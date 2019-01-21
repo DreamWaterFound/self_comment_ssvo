@@ -81,7 +81,7 @@ public:
      * @param[in]  ft_ref           TODO ??? 参考帧中的特征
      * @param[out] px_cur           TODO 点在当前帧中的投影图像坐标?
      * @param[in]  level_cur        TODO 当前帧中点所在的图层?
-     * @param[in]  max_iterations   最大迭代次数 TODO 啥的?
+     * @param[in]  max_iterations   最大迭代次数 TODO 指的是图像对齐过程中的优化吗?
      * @param[in]  epslion          迭代误差阈值
      * @param[in]  threshold        TODO 不知道是什么阈值
      * @param[in]  verbose          是否输出详细信息

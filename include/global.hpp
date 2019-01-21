@@ -42,7 +42,7 @@
 #include<Eigen/StdVector>
 
 
-//NOTICE 这里是处理vector容器和Eigen对象的兼容问题的,以后自己写视觉里程计的时候也要用这个东西
+//NOTICE 这里是处理vector容器和Eigen对象的兼容问题的,以后自己写视觉里程计的时候也要用这个东西的
 EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Matrix2d)
 EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Matrix3d)
 EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Matrix4d)

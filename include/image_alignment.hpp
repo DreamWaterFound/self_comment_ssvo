@@ -26,7 +26,7 @@ namespace ssvo {
  * 
  * @param[in] I 图像1
  * @param[in] J 图像2
- * @param[in] a TODO ?
+ * @param[in] a TODO ? 什么参数?
  * @param[in] b TODO ?
  */
 void calculateLightAffine(const cv::Mat &I, const cv::Mat &J, float &a, float &b);

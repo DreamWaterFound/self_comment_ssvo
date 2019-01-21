@@ -66,7 +66,7 @@ public:
      * 
      * @param[in] image_cur         当前帧图像
      * @param[in] patch_ref         参考图像块 TODO 
-     * @param[in] patch_ref_gx      TODO 
+     * @param[in] patch_ref_gx      TODO 参考图像块的,网格的坐标?
      * @param[in] patch_ref_gy      TODO 
      * @param[in] estimate          TODO 一个估计的值
      * @param[in] max_iterations    最大迭代次数,默认30

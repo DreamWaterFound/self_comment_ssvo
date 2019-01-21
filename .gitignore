@@ -10,7 +10,7 @@ lib/
 *install*/
 .idea/
 .vs/
-.vscode/
+
 
 # for logging
 *INFO*

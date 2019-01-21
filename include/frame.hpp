@@ -164,7 +164,7 @@ public:
     /**
      * @brief 向当前帧中添加特征
      * 
-     * @param[in] ft    特征对象的句柄  TODO REVIEW 原来在这里 ft 的写法都是表示特征对象?
+     * @param[in] ft    特征对象的句柄  TODO REVIEW 原来在这里 ft 的写法都是表示特征对象??
      * @return true 
      * @return false 
      */
@@ -330,6 +330,7 @@ public:
     SE3d beforeUpdate_Tcw_;
 
 protected:
+    ///下面的这些属性会被关键帧类所继承
 
     ///特征点和地图点对
     std::unordered_map<MapPoint::Ptr, Feature::Ptr> mpt_fts_;

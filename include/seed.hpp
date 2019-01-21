@@ -35,7 +35,7 @@ public:
     ///指向自己类的指针
     typedef std::shared_ptr<Seed> Ptr;
 
-    ///TODO 下一个种子点的id?
+    ///TODO 下一个种子点的id???
     static uint64_t next_id;
     ///自己的id
     const uint64_t id;

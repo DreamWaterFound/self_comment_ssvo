@@ -63,7 +63,7 @@ public:
 
     /**
      * @brief 常用的大小
-     * @detials 话说写成这个形式究竟有什么好处?
+     * @detials 话说写成这个形式究竟有什么好处? TODO 
      */
     enum {
         MAX_GRIDS = 600,        ///<最大的网格个数
