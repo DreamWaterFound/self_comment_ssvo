@@ -8,53 +8,95 @@
 #include <list>
 #include <unordered_map>
 
+//REVIEW 本文件中涉及到的源代码没有看
+
 namespace ssvo
 {
 
+/**
+ * @brief 计时用的
+ * 
+ * @tparam T   计时单位(ms or s)
+ */
 template<typename T>
 class Timer
 {
 public:
 
+    /**
+     * @brief 开始计时
+     * 
+     */
     inline void start()
     {
         start_ = std::chrono::steady_clock::now();
     }
 
+    /**
+     * @brief 停止计时
+     * 
+     * @return double 
+     */
     inline double stop()
     {
         duration_ = std::chrono::steady_clock::now() - start_;
         return duration_.count();
     }
 
+    /**
+     * @brief 定时器复位
+     * 
+     */
     inline void reset()
     {
         duration_ = std::chrono::duration<double, T>(0.0);
     }
 
+    /**
+     * @brief 获取经过的时间
+     * @detials 需要经过转换操作才能够得出正确的时间
+     * @return double 
+     */
     inline double duration() const
     {
         return duration_.count();
     }
 
 private:
-
+    ///开始时刻
     std::chrono::steady_clock::time_point start_;
+    ///经过的时间
     std::chrono::duration<double, T> duration_;
 };
 
+///计时单位:ms
 typedef Timer<std::milli> MillisecondTimer;
+///计时单位:s
 typedef Timer<std::ratio<1, 1>> SecondTimer;
 
+/**
+ * @brief 追踪时间? TODO 
+ * 
+ */
 class TimeTracing
 {
 public:
-
+    ///计时的模块的名字?  TODO
     typedef std::list<std::string> TraceNames;
-
+    ///管理本类的指针
     typedef std::shared_ptr<TimeTracing> Ptr;
 
+//是否使能时间记录
 #ifdef SSVO_USE_TRACE
+
+    /**
+     * @brief 构造函数
+     * 
+     * @param[in] file_name     保存的文件名字
+     * @param[in] file_path     保存的文件路径
+     * @param[in] trace_names   TODO ???
+     * @param[in] log_names     日志文件名? TODO 
+     */
     TimeTracing(const std::string file_name, const std::string file_path,
                 const TraceNames &trace_names, const TraceNames &log_names) :
         file_name_(file_path), trace_names_(trace_names), log_names_(log_names)
@@ -74,12 +116,21 @@ public:
         traceHeader();
     }
 
+    /**
+     * @brief 析构函数
+     * 
+     */
     ~TimeTracing()
     {
         ofs_.flush();
         ofs_.close();
     }
 
+    /**
+     * @brief 开启定时器
+     * 
+     * @param[in] name 定时器的名字
+     */
     inline void startTimer(const std::string &name)
     {
         auto t = timers_.find(name);
@@ -90,6 +141,11 @@ public:
         t->second.start();
     }
 
+    /**
+     * @brief 停止定时器
+     * 
+     * @param[in] name 要停止的定时器的名字
+     */
     inline void stopTimer(const std::string &name)
     {
         auto t = timers_.find(name);
@@ -100,6 +156,12 @@ public:
         t->second.stop();
     }
 
+    /**
+     * @brief 获取经过的时间
+     * 
+     * @param[in] name 
+     * @return double 
+     */
     inline double getTimer(const std::string &name)
     {
         auto t = timers_.find(name);
@@ -110,6 +172,12 @@ public:
         return t->second.duration();
     }
 
+    /**
+     * @brief 看样子是和日志记录有关的一个函数
+     * 
+     * @param[in] name  要找的日志记录名称
+     * @param[in] value 记录的秒数的值
+     */
     inline void log(const std::string &name, const double value)
     {
         auto log = logs_.find(name);
@@ -120,6 +188,10 @@ public:
         log->second = value;
     }
 
+    /**
+     * @brief 记录到文件
+     * 
+     */
     inline void writeToFile()
     {
         bool first_value = true;
@@ -153,25 +225,59 @@ public:
 
 #else
 
+    /**
+     * @brief 构造函数
+     * 
+     * @param[in] file_name     保存的文件名字
+     * @param[in] file_path     保存的文件路径
+     * @param[in] trace_names   TODO ???
+     * @param[in] log_names     日志文件名? TODO 
+     */
     TimeTracing(const std::string file_name, const std::string file_path,
         const TraceNames &trace_names, const TraceNames &log_names) :
         file_name_(file_path), trace_names_(trace_names), log_names_(log_names)
     {}
 
+    /**
+     * @brief 开启定时器,现在是空的
+     * 
+     * @param[in] name 定时器名字
+     */
     inline void startTimer(const std::string &name) {}
-
+    /**
+     * @brief 停止定时器,现在函数的实现是空的
+     * 
+     * @param[in] name 定时器的名字
+     */
     inline void stopTimer(const std::string &name) {}
-
+    /**
+     * @brief 获取经过的时间,但现在的函数是空的
+     * 
+     * @param[in] name 
+     * @return double 
+     */
     inline double getTimer(const std::string &name) { return 0; }
-
+    /**
+     * @brief 向日志文件中写入时间信息,现在函数的实现是空的
+     * 
+     * @param[in] name      日志文件名称
+     * @param[in] value     值
+     */
     inline void log(const std::string &name, const double value) {}
-
+    /**
+     * @brief 写入文件,现在函数的实现是空的
+     * 
+     */
     inline void writeToFile() {}
 
 #endif // SSVO_USE_TRACE
 
 private:
 
+    /**
+     * @brief 初始化这个时间追踪器
+     * 
+     */
     void init()
     {
         for(const std::string &trace : trace_names_)
@@ -185,6 +291,10 @@ private:
         }
     }
 
+    /**
+     * @brief 复位当前对象
+     * 
+     */
     void reset()
     {
         for(auto it = timers_.begin(); it != timers_.end(); ++it)
@@ -195,6 +305,10 @@ private:
 
     }
 
+    /**
+     * @brief TODO 
+     * 
+     */
     void traceHeader()
     {
         bool first_value = true;
@@ -223,16 +337,22 @@ private:
 
 private:
 
+    ///名称和定时器的对应关系
     std::unordered_map<std::string, SecondTimer> timers_;
+    ///名称和日志的对应关系
     std::unordered_map<std::string, double> logs_;
+    ///TODO 什么的文件名?
     std::string file_name_;
+    ///用来做什么的?  TODO 
     TraceNames trace_names_;
+    ///日志文件名
     TraceNames log_names_;
-
+    ///用来写文件的输出文件流
     std::ofstream ofs_;
 };
 
 //! TimeTrace for ssvo
+//一些实例的外部声明
 extern TimeTracing::Ptr sysTrace;
 extern TimeTracing::Ptr dfltTrace;
 extern TimeTracing::Ptr mapTrace;

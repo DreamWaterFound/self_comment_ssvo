@@ -1,3 +1,13 @@
+/**
+ * @file utils.hpp
+ * @author guoqing (1337841346@qq.com)
+ * @brief 一些工具的声明
+ * @version 0.1
+ * @date 2019-01-22
+ * 
+ * @copyright Copyright (c) 2019
+ * 
+ */
 #ifndef _SSVO_UTILS_HPP_
 #define _SSVO_UTILS_HPP_
 
@@ -6,8 +16,25 @@
 
 namespace ssvo {
 
+/**
+ * @brief 工具函数所在的命名空间
+ * @details REVIEW 源代码没有看
+ */
 namespace utils {
 
+/**
+ * @brief 在给定的矩阵上的指定位置插入一个子矩阵
+ * 
+ * @tparam Ts           源矩阵的数据类型
+ * @tparam Td           要插入的目标矩阵的数据类型 
+ * @tparam Size         方阵的大小 TODO 
+ * @param[in&out] src   源矩阵,这里是Eiegn形式的
+ * @param[in] dst_ptr   要插入的目标矩阵
+ * @param[in] dx_ptr    要插入的位置指针x
+ * @param[in] dy_ptr    要插入的位置指针y
+ * @param[in] u         TODO 
+ * @param[in] v         TODO 
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src, Td* dst_ptr, Td* dx_ptr, Td* dy_ptr, const double u, const double v)
 {
@@ -53,6 +80,19 @@ inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src, Td
     dy = (mat_interpolate.block(2, 1, Size, Size) - expand_img_y) * 0.5;
 }
 
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts           源矩阵的数据类型
+ * @tparam Td           目标矩阵的数据类型
+ * @tparam Size         大小 TODO 
+ * @param[in&out] src   源矩阵,这里是cv::Mat形式的    
+ * @param[in] dst_ptr   要插入的矩阵
+ * @param[in] dx_ptr    插入位置的x指针
+ * @param[in] dy_ptr    插入位置的y指针
+ * @param[in] u         TODO 
+ * @param[in] v         TODO 
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const cv::Mat &src, Td* dst_ptr, Td* dx_ptr, Td* dy_ptr, const double u, const double v)
 {
@@ -100,6 +140,17 @@ inline void interpolateMat(const cv::Mat &src, Td* dst_ptr, Td* dx_ptr, Td* dy_p
     dy = (mat_interpolate.block(2, 1, Size, Size) - expand_img_y) * 0.5;
 }
 
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts           源矩阵数据类型
+ * @tparam Td           目标矩阵数据类型
+ * @tparam Size         大小  TODO 
+ * @param[in] src       源矩阵
+ * @param[in] dst_ptr   目标矩阵
+ * @param[in] u         TODO
+ * @param[in] v         TODO 
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src, Td* dst_ptr, const double u, const double v)
 {
@@ -134,6 +185,17 @@ inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src, Td
     dst = mat_tl + mat_tr + mat_bl + mat_br;
 }
 
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts           源矩阵的数据类型
+ * @tparam Td           目标矩阵的数据类型 
+ * @tparam Size         大小 TODO
+ * @param[in] src       源矩阵
+ * @param[in] dst_ptr   要插入的目标矩阵
+ * @param[in] u         TODO 
+ * @param[in] v         TODO 
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const cv::Mat &src, Td* dst_ptr, const double u, const double v)
 {
@@ -171,6 +233,19 @@ inline void interpolateMat(const cv::Mat &src, Td* dst_ptr, const double u, cons
 }
 
 //! Eigen::Matrix
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts       源矩阵数据类型
+ * @tparam Td       目标矩阵数据类型
+ * @tparam Size     TODO 大小
+ * @param[in] src   源矩阵
+ * @param[in] img   图像,也就是要插入的矩阵
+ * @param[in] dx    TODO 看来前面的注释是错误的
+ * @param[in] dy    TODO 
+ * @param[in] u     TODO 可能这个才是真正插入的位置
+ * @param[in] v     TODO 
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src,
                            Matrix<Td, Size, Size, RowMajor> &img,
@@ -181,6 +256,19 @@ inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src,
     interpolateMat<Ts, Td, Size>(src, img.data(), dx.data(), dy.data(), u, v);
 }
 
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts           源矩阵数据类型
+ * @tparam Td           目标矩阵数据类型
+ * @tparam Size         TODO 大小
+ * @param[in] src       目标矩阵
+ * @param[in] img_vec   要插入的图像
+ * @param[in] dx_vec    TODO
+ * @param[in] dy_vec    TODO
+ * @param[in] u         TODO 
+ * @param[in] v         TODO 
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src,
                            Matrix<Td, Size * Size, 1> &img_vec,
@@ -191,6 +279,17 @@ inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src,
     interpolateMat<Ts, Td, Size>(src, img_vec.data(), dx_vec.data(), dy_vec.data(), u, v);
 }
 
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts           源矩阵数据类型
+ * @tparam Td           目标矩阵的数据类型
+ * @tparam Size         大小 TODO 
+ * @param[in] src       原矩阵
+ * @param[in] img       TODO
+ * @param[in] u         TODO
+ * @param[in] v         TODO
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src,
                            Matrix<Td, Size, Size, RowMajor> &img,
@@ -199,6 +298,17 @@ inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src,
     interpolateMat<Ts, Td, Size>(src, img.data(), u, v);
 }
 
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts           源矩阵数据类型
+ * @tparam Td           目标矩阵的数据类型
+ * @tparam Size         大小 TODO 
+ * @param[in] src       原矩阵
+ * @param[in] img_vec   TODO
+ * @param[in] u         TODO
+ * @param[in] v         TODO
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src,
                            Matrix<Td, Size * Size, 1> &img_vec,
@@ -208,6 +318,19 @@ inline void interpolateMat(const Matrix<Ts, Dynamic, Dynamic, RowMajor> &src,
 }
 
 //！ cv::Mat
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts           源矩阵数据类型
+ * @tparam Td           目标矩阵的数据类型
+ * @tparam Size         大小 TODO 
+ * @param[in] src       原矩阵
+ * @param[in] img       要插入的图像?  TODO
+ * @param[in] dx        TODO
+ * @param[in] dy        TODO
+ * @param[in] u         TODO
+ * @param[in] v         TODO
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const cv::Mat &src,
                            Matrix<Td, Size, Size, RowMajor> &img,
@@ -218,6 +341,19 @@ inline void interpolateMat(const cv::Mat &src,
     interpolateMat<Ts, Td, Size>(src, img.data(), dx.data(), dy.data(), u, v);
 }
 
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts           源矩阵数据类型
+ * @tparam Td           目标矩阵的数据类型
+ * @tparam Size         大小 TODO 
+ * @param[in] src       原矩阵
+ * @param[in] img_vec   TODO
+ * @param[in] dx_vec    TODO
+ * @param[in] dy_vec    TODO
+ * @param[in] u         TODO
+ * @param[in] v         TODO
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const cv::Mat &src,
                            Matrix<Td, Size * Size, 1> &img_vec,
@@ -228,6 +364,17 @@ inline void interpolateMat(const cv::Mat &src,
     interpolateMat<Ts, Td, Size>(src, img_vec.data(), dx_vec.data(), dy_vec.data(), u, v);
 }
 
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts           源矩阵数据类型
+ * @tparam Td           目标矩阵的数据类型
+ * @tparam Size         大小 TODO 
+ * @param[in] src       原矩阵
+ * @param[in] img_vec   TODO
+ * @param[in] u         TODO
+ * @param[in] v         TODO
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const cv::Mat &src,
                            Matrix<Td, Size * Size, 1> &img_vec,
@@ -236,6 +383,16 @@ inline void interpolateMat(const cv::Mat &src,
     interpolateMat<Ts, Td, Size>(src, img_vec.data(), u, v);
 }
 
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts           源矩阵数据类型
+ * @tparam Td           目标矩阵的数据类型
+ * @tparam Size         大小 TODO 
+ * @param[in] src       原矩阵
+ * @param[in] u         TODO
+ * @param[in] v         TODO
+ */
 template<typename Ts, typename Td, int Size>
 inline void interpolateMat(const cv::Mat &src,
                            Matrix<Td, Size, Size, RowMajor> &img,
@@ -246,6 +403,16 @@ inline void interpolateMat(const cv::Mat &src,
 
 //! https://github.com/uzh-rpg/rpg_vikit/blob/master/vikit_common/include/vikit/vision.h
 //! WARNING This function does not check whether the x/y is within the border
+/**
+ * @brief 插入矩阵
+ * 
+ * @tparam Ts       源矩阵的数据类型
+ * @tparam Td       目标矩阵的数据类型
+ * @param[in] mat   源矩阵? TODO
+ * @param[in] u     TODO
+ * @param[in] v     TODO
+ * @return Td       插入矩阵后的结果
+ */
 template <typename Ts, typename Td>
 inline Td interpolateMat(const cv::Mat& mat, const double u, const double v)
 {
@@ -264,6 +431,13 @@ inline Td interpolateMat(const cv::Mat& mat, const double u, const double v)
 
 //! ===========================================================================================
 
+/**
+ * @brief 获取中位数
+ * 
+ * @tparam T            数据的类型
+ * @param[in] data_vec  数据向量
+ * @return T            得到的中位数
+ */
 template<class T>
 inline T getMedian(std::vector<T> &data_vec)
 {
@@ -273,6 +447,15 @@ inline T getMedian(std::vector<T> &data_vec)
     return *it;
 }
 
+/**
+ * @brief 计算均匀分布概率
+ * 
+ * @tparam T            样本的数据类型
+ * @param[in] x         样本
+ * @param[in] mu        均值
+ * @param[in] sigma     方差
+ * @return double       概率
+ */
 template <typename T>
 inline double normal_distribution(T x, T mu, T sigma)
 {
@@ -282,6 +465,13 @@ inline double normal_distribution(T x, T mu, T sigma)
     return inv_sqrt_2pi / sigma * std::exp(-0.5 * a * a);
 }
 
+/**
+ * @brief TODO 减少啥啊
+ * 
+ * @tparam T            向量元素的数据类型
+ * @param[in&out] vecs  向量1
+ * @param[in] inliers   内点
+ */
 template <typename T>
 inline void reduceVecor(std::vector<T>& vecs, const std::vector<bool>& inliers)
 {
@@ -304,6 +494,14 @@ inline void reduceVecor(std::vector<T>& vecs, const std::vector<bool>& inliers)
     }
 }
 
+/**
+ * @brief 计算重投影误差??? TODO 前面不是已经有了专门的类了吗?
+ * 
+ * @param[in] fn    特征点的序列
+ * @param[in] Tcw   相机的位姿变换
+ * @param[in] pw    世界坐标系下这些点的3D坐标
+ * @return double 
+ */
 inline double reprojectError(const Vector2d &fn, const SE3d &Tcw, const Vector3d &pw)
 {
     Vector3d xyz_cur(Tcw*pw);
@@ -312,32 +510,122 @@ inline double reprojectError(const Vector2d &fn, const SE3d &Tcw, const Vector3d
 }
 
 //! functions not using  template
+/**
+ * @brief Klt光流追踪
+ * 
+ * @param[in] imgs_ref          参考帧图像
+ * @param[in] imgs_cur          当前帧图像
+ * @param[in] win_size          窗口大小
+ * @param[in] pts_ref           参考帧上的像素点
+ * @param[in] pts_cur           当前帧上的像素点
+ * @param[in] status            每个点的状态
+ * @param[in] termcrit          TODO 貌似是什么准则
+ * @param[in] track_forward     是否向前追踪,默认为否
+ * @param[in] verbose           是否产生详情
+ */
 void kltTrack(const ImgPyr& imgs_ref, const ImgPyr& imgs_cur, const cv::Size win_size,
               const std::vector<cv::Point2f>& pts_ref, std::vector<cv::Point2f>& pts_cur,
               std::vector<bool> &status, cv::TermCriteria termcrit, bool track_forward = false, bool verbose = false);
-
+/**
+ * @brief 三角化点
+ * 
+ * @param[in] R_cr  从参考帧到当前帧的旋转 
+ * @param[in] t_cr  从参考帧到当前帧的平移
+ * @param[in] fn_r  参考帧的特征向量
+ * @param[in] fn_c  当前帧的特征向量
+ * @param[out] d_ref TODO ??? 三角化产生的点?
+ * @return true 
+ * @return false 
+ */
 bool triangulate(const Matrix3d &R_cr,  const Vector3d &t_cr, const Vector3d &fn_r, const Vector3d &fn_c, double &d_ref);
 
+/**
+ * @brief 和基础矩阵相关的工具函数
+ * 
+ */
 namespace Fundamental
 {
 
+/**
+ * @brief 计算基础矩阵
+ * 
+ * @param[in] pts_prev 前一帧中的点
+ * @param[in] pts_next 当前帧中的点
+ * @param[out] F       计算得到的基础矩阵             
+ * @param[out] inliers  内点标记
+ * @param[in] sigma2   TODO ???
+ * @param[in] max_iterations 最大迭代次数,默认1000
+ * @param[in] bE        TODO 
+ * @return true 
+ * @return false 
+ */
 bool findFundamentalMat(const std::vector<cv::Point2d> &pts_prev, const std::vector<cv::Point2d> &pts_next,
                        Matrix3d &F, std::vector<bool> &inliers,
                        const double sigma2 = 1, const int max_iterations = 1000, const bool bE = false);
-
+/**
+ * @brief 计算误差
+ * @detials 详细地来说,应该是计算极线投影误差吗? TODO
+ * @param[in] p1    平面点1    
+ * @param[in] p2    平面点2
+ * @param[in] F     计算得到的基础矩阵F
+ * @param[in] err1  误差1,猜测可能是正向投影反向投影各能够获得一个投影的误差 TODO
+ * @param[in] err2  误差2
+ */
 void computeErrors(const cv::Point2d &p1, const cv::Point2d &p2, Matrix3d &F, double &err1, double &err2);
-
+/**
+ * @brief 计算投影误差的平方??? TODO
+ * 
+ * @param[in] p1    空间点1
+ * @param[in] p2    空间点2
+ * @param[in] T     相机的变换矩阵
+ * @param[in] p     平面点
+ * @return double   得到的误差的平方
+ */
 double computeErrorSquared(const Vector3d &p1, const Vector3d &p2, const SE3d &T, const Vector2d &p);
-
+/**
+ * @brief 单位化
+ * @detials 其实它的实现方法和ORB-SLAM2中的是类似的
+ * @param[in] pts       平面点集合 
+ * @param[out] pts_norm  归一化后的点的集合
+ * @param[out] T         归一化矩阵
+ */
 void Normalize(const std::vector<cv::Point2d>& pts, std::vector<cv::Point2d>& pts_norm, Matrix3d& T);
-
+/**
+ * @brief 8点法求解基础矩阵
+ * 
+ * @param[in] pts_prev 前一帧中的像素点集合
+ * @param[in] pts_next 后一帧中的像素点集合
+ * @param[out] F       计算得到的基础矩阵
+ * @param[in] bE       TODO
+ * @return true 
+ * @return false 
+ */
 bool run8point(const std::vector<cv::Point2d>& pts_prev, const std::vector<cv::Point2d>& pts_next,
                Matrix3d& F, const bool bE = false);
-
+/**
+ * @brief 进行RANSAC算法剔除外点
+ * 
+ * @param[in] pts_prev          前一帧中像素点集合
+ * @param[in] pts_next          后一帧中像素点集合
+ * @param[out] F                计算得到的基础矩阵
+ * @param[out] inliers          得到的内点集合
+ * @param[in] sigma2            TODO ??
+ * @param[in] max_iterations    RANSAC最大迭代次数
+ * @param[in] bE                TODO?
+ * @return true 
+ * @return false 
+ */
 bool runRANSAC(const std::vector<cv::Point2d>& pts_prev, const std::vector<cv::Point2d>& pts_next,
                 Matrix3d& F, std::vector<bool> &inliers,
                 const double sigma2 = 1, const int max_iterations = 1000, const bool bE = false);
-
+/**
+ * @brief 本征矩阵的分解
+ * 
+ * @param[in] E     等待进行分解的本征矩阵    
+ * @param[out] R1   得到的一种旋转的情况
+ * @param[out] R2   得到的第二种旋转的情况
+ * @param[out] t    得到的一种平移的情况,另外一种可以通过直接加符号来获得
+ */
 void decomposeEssentialMat(const Matrix3d& E, Matrix3d& R1, Matrix3d& R2, Vector3d& t);
 
 }//! namespace Fundamental
