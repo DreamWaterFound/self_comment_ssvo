@@ -163,7 +163,7 @@ private:
     ///绘制的关键帧的链接关系的线的宽度
     float key_frame_graph_line_width;
 
-    ///是否有停止当前线程的请求标志
+    ///是否有停止当前线程的请求标志as
     bool required_stop_;
     ///TODO 
     bool is_finished_;
