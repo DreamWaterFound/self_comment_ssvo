@@ -280,7 +280,7 @@ private:
     std::mutex mutex_GBA_;
     ///全局BA的线程
     std::thread* thread_GBA_;
-    ///TODO ???/
+    ///TODO 
     bool FullBAIdx_;
 
     //! 通过最小得分计算的闭环次数，仅用于输出信息[师兄注释]

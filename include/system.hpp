@@ -125,8 +125,8 @@ private:
     bool createNewKeyFrame();
 
     /**
-     * @brief TODO 不知道哇
-     * 
+     * @brief 当一帧的处理过程结束的时候进行的操作
+     * @detials 主要是更新状态,绘制帧,计时器控制,日志控制,轨迹记录控制
      */
     void finishFrame();
 
@@ -163,7 +163,7 @@ private:
     Status status_;
 
     //图像相关
-    AbstractCamera::Ptr camera_;                //TODO ????
+    AbstractCamera::Ptr camera_;                //当前系统中所使用的相机类型,这里使用其父类来表示了
     FastDetector::Ptr fast_detector_;           //fast角点提取器
     FeatureTracker::Ptr feature_tracker_;       //特征追踪
     Initializer::Ptr initializer_;              //初始化

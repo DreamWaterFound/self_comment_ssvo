@@ -105,10 +105,11 @@ public:
      * @{
      */
 
+    /** @brief 得到相机的帧率 */
     inline const int fps() const { return fps_; }
-
+    /** @brief 图像的宽度 */
     inline const int width() const { return width_; }
-
+    /** @brief 图像的高度 */
     inline const int height() const { return height_; }
 
     inline const double fx() const { return fx_; };
@@ -207,11 +208,11 @@ protected:
     int height_;
     ///相机内参数
     double fx_, fy_, cx_, cy_;
-    ///相机去畸变系数
+    ///相机内参和去畸变系数
     cv::Mat K_, D_;
     ///TODO 
     cv::Mat T_BC_;
-    ///是否去畸变??? TODO
+    ///是否去畸变
     bool distortion_;
 };
 
@@ -315,7 +316,7 @@ private:
 
     /**
      * @brief 创建针孔相机实例
-     * 
+     * @detials 其实就是从相机的参数文件中读取一些参数
      * @param[in] calib_file 相机参数文件
      * @return PinholeCamera::Ptr 实例句柄
      */

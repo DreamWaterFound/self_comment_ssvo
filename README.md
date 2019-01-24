@@ -6,6 +6,8 @@
 
 原 README.MD 文档如下
 
+> 注意,如果更改了编译模式(Debug or Release),记得删除build文件夹后重新cmake,否则不一定会立即起作用
+
 -----
 
 # ssvo

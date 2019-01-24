@@ -191,7 +191,7 @@ private:
     }
 
 public:
-    //! config file's name TODO 为什么注释写成这种形式?
+    //! config file's name 
     ///配置文件的路径
     static string file_name_;
 

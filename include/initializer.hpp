@@ -253,7 +253,7 @@ public:
                             const cv::Point2d& ft1, const cv::Point2d& ft2, Vector4d& P3D);
 
     /**
-     * @brief 构造函数
+     * @brief 初始化的构造函数
      *  
      * @param[in] fast_detector     特征点提取器
      * @param[in] verbose           是否输出详情

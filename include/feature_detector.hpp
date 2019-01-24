@@ -21,7 +21,9 @@
 namespace ssvo
 {
 
-/** @brief 角点的数据类型 */
+/** @brief 角点的数据类型 
+ *  @detials 其中包含它在图像中的坐标x,y,提取它的图层和shi-yomasi评分
+*/
 struct Corner{
     ///在图像中的坐标x
     float x;        //!< x-coordinate of corner in the image.
@@ -126,8 +128,8 @@ public:
 
 public:
 
-    const int width_;                   ///<TODO 宽度
-    const int height_;                  ///<TODO 高度
+    const int width_;                   ///<调用构造函数时设置的图像宽度
+    const int height_;                  ///<调用构造函数时设置的图像高度
     const int max_threshold_;           ///<最大阈值
     const int min_threshold_;           ///<最小阈值
 
@@ -137,9 +139,9 @@ private:
     int cell_n_cols_;                   ///<cell的列数
     int cell_n_rows_;                   ///<cell的行数
     int N_;                             ///<总cell的个数
-    std::vector<int> cells_x_;          ///<TODO
-    std::vector<int> cells_y_;          ///<TODO
-    std::vector<int> fast_threshold_;   ///<存储了每个cell的阈值? TODO 
+    std::vector<int> cells_x_;          ///<存储在x方向上每个cell的坐标
+    std::vector<int> cells_y_;          ///<存储在y方向上每个cell的坐标
+    std::vector<int> fast_threshold_;   ///<存储了每个cell的阈值 TODO 一直都是保存最大阈值? 
 };
 
 ///角点序列类型声明
@@ -213,12 +215,12 @@ public:
      * @see FastDetector::FastDetector()
      * @param[in] width             图像的宽度
      * @param[in] height            图像的高度
-     * @param[in] border            边界...宽度? TODO 
+     * @param[in] border            图像边界
      * @param[in] nlevels           图像金字塔的层数
      * @param[in] grid_size         网格大小
      * @param[in] grid_min_size     网格的最小大小 TODO 为什么会有这个最小的大小?
-     * @param[in] max_threshold     最大阈值 TODO 啥阈值?
-     * @param[in] min_threshold     最小阈值
+     * @param[in] max_threshold     fast角点最大阈值 TODO 啥阈值?
+     * @param[in] min_threshold     fast角点最小阈值
      * @return FastDetector::Ptr    实例指针
      */
     inline static FastDetector::Ptr create(int width, int height, int border, int nlevels, int grid_size, int grid_min_size, int max_threshold = 20, int min_threshold = 7)
@@ -251,6 +253,7 @@ private:
      * @param[in] max_threshold     最大阈值 TODO 啥阈值?
      * @param[in] min_threshold     最小阈值
      * @return FastDetector::Ptr    实例指针
+     * @todo 更新上面的描述
      */
     FastDetector(int width, int height, int border, int nlevels, int grid_size, int grid_min_size, int max_threshold, int min_threshold);
 
@@ -277,34 +280,34 @@ private:
     const int width_;
     ///图像的高度
     const int height_;
-    ///图像的边界..??? TODO 
+    ///图像的边界的大小
     const int border_;
-    ///图像金字塔的层数 TODO 还是当前图像所在的层数哇?
+    ///特征图像金字塔的层数 
     const int nlevels_;
     ///TODO 一共提取到的特征点个数吗?
     int N_;
 
     ///最小网格大小
     const int grid_min_size_;
-    ///TODO ????
+    ///算法执行过程中是否会调节网格的大小
     bool size_adjust_;
-    ///最大阈值 TODO
+    ///提取FAST特征点的时候使用到的最大阈值
     const int max_threshold_;
-    ///最小阈值 TODO
+    ///提取FAST特征点的时候使用到的最小阈值
     const int min_threshold_;
-    ///阈值 ...TODO
+    ///提取FAST角点时,默认使用的阈值
     int threshold_;
 
     //! 不能删除。多个线程用到了特征提取
     ///线程锁
     std::mutex mutex_fast_detector_;
 
-    ///网各类的序列 TODO 
+    ///存储每一层的网格对象
     std::vector<FastGrid> detect_grids_;
 
-    ///在这一层的图像中提取到的角点的序列
+    ///按图像金字塔的层数来存储的corner序列 
     std::vector<Corners> corners_in_levels_;
-    ///TODO ??
+    ///管理 特征角点 类型的一个网格对象? TODO 
     Grid<Corner> grid_filter_;
 };
 

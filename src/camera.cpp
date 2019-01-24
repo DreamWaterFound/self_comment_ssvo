@@ -24,18 +24,22 @@ AbstractCamera::AbstractCamera(int width, int height, double fx, double fy, doub
     K_.at<double>(1,2) = cy_;
 }
 
+//根据参数文件来确定摄像头的真实类型
 AbstractCamera::Model AbstractCamera::checkCameraModel(std::string calib_file)
 {
+    //step 1 打开文件
     cv::FileStorage fs(calib_file.c_str(), cv::FileStorage::READ);
     LOG_ASSERT(fs.isOpened()) << "Failed to open calibration file at: " << calib_file;
 
     //! camera parameters
+    //step 2 从文件中读取摄像头类型
     std::string str_camera_model;
     if (!fs["Camera.model"].empty())
         fs["Camera.model"] >> str_camera_model;
 
     fs.release();
 
+    //step 3 确定摄像头模型并返回
     if(str_camera_model == "pinhole")
         return PINHOLE;
     else if(str_camera_model == "atan")
@@ -115,27 +119,32 @@ PinholeCamera::PinholeCamera(int width, int height, const cv::Mat& K, const cv::
 
     T_BC_ = cv::Mat::eye(4, 4, CV_64FC1);
 }
-
+//针孔相机的构造函数
 PinholeCamera::PinholeCamera(std::string calib_file) :
     AbstractCamera(PINHOLE)
 {
+    //step 1 打开摄像头的参数配置文件
     cv::FileStorage fs(calib_file.c_str(), cv::FileStorage::READ);
     LOG_ASSERT(fs.isOpened()) << "Failed to open calibration file at: " << calib_file;
 
     //! camera parameters
+    //step 2 确定相机模型是否为针孔相机
     std::string str_camera_model;
     if (!fs["Camera.model"].empty())
         fs["Camera.model"] >> str_camera_model;
 
     LOG_ASSERT(str_camera_model == "pinhole") << "Wrong camera modle: " << str_camera_model;
 
+    //step 3 读取其他参数
+    //fps
     fps_ = (double)fs["Camera.fps"];
-
+    //FileNode用于读取*.yaml文件中被[]括起来的内容
+    //分辨率
     cv::FileNode resolution = fs["Camera.resolution"];
     LOG_ASSERT(resolution.size() == 2) << "Failed to load Camera.resolution with error size: " << resolution.size();
     width_ = resolution[0];
     height_ = resolution[1];
-
+    //内参
     cv::FileNode intrinsics = fs["Camera.intrinsics"];
     LOG_ASSERT(intrinsics.size() == 4) << "Failed to load Camera.intrinsics with error size: " << intrinsics.size();
     fx_ = intrinsics[0];
@@ -147,7 +156,7 @@ PinholeCamera::PinholeCamera(std::string calib_file) :
     K_.at<double>(0,2) = cx_;
     K_.at<double>(1,1) = fy_;
     K_.at<double>(1,2) = cy_;
-
+    //去畸变参数
     cv::FileNode distortion_coefficients = fs["Camera.distortion_coefficients"];
     LOG_ASSERT(distortion_coefficients.size() == 4) << "Failed to load Camera.distortion_coefficients with error size: " << distortion_coefficients.size();
     k1_ = distortion_coefficients[0];
@@ -160,9 +169,9 @@ PinholeCamera::PinholeCamera(std::string calib_file) :
     D_.at<double>(1) = k2_;
     D_.at<double>(2) = p1_;
     D_.at<double>(3) = p2_;
-
+    //检查是否需要去畸变
     distortion_ = (fabs(k1_) > 0.0000001);
-
+    //Sensor extrinsics wrt. the body-frame. TODO 不明白这个是什么,看样子也应该是传感器的一种参数
     cv::FileNode T = fs["Camera.T_BC"];
     LOG_ASSERT(T.size() == 16) << "Failed to load Camera.T_BC with error size: " << T.size();
     T_BC_ = cv::Mat::eye(4,4,CV_64FC1);
@@ -170,7 +179,7 @@ PinholeCamera::PinholeCamera(std::string calib_file) :
     {
         *(T_BC_.ptr<double>(0) + i) = T[i];
     }
-
+    //step 4 释放文件指针
     fs.release();
 }
 

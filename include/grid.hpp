@@ -38,7 +38,7 @@ public:
 
     /**
      * @brief 网格的构造函数
-     * 
+     * @todo 在被调用的时候使用的参数分别是图像的宽度,高度和预先设置的网格大小
      * @param[in] cols 列
      * @param[in] rows 行
      * @param[in] size 大小

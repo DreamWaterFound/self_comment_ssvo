@@ -1,7 +1,7 @@
 /**
  * @file feature_alignment.hpp
  * @author guoqing (1337841346@qq.com)
- * @brief 图像对齐算法
+ * @brief 特征对齐算法
  * @version 0.1
  * @date 2019-01-18
  * 
@@ -24,7 +24,7 @@ namespace ssvo {
 //! ====================== Patch align
 
 /**
- * @brief 基于图像块的图像对齐算法
+ * @brief 基于图像块的特征对齐算法
  * @detials 只有两个静态成员函数,是一个静态类
  * 
  */

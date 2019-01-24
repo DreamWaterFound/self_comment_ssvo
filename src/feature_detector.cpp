@@ -21,24 +21,41 @@ inline size_t Grid<Corner>::getIndex(const Corner &element)
         + static_cast<size_t>(element.x/grid_size_);
 }
 
-FastGrid::FastGrid(int width, int height, int cell_size, int max_threshold, int min_threshold) :
-    width_(width), height_(height), max_threshold_(max_threshold), min_threshold_(min_threshold), cell_size_(cell_size)
+//创建图像网格对象
+FastGrid::FastGrid(
+    int width, int height,                      //图像大小
+    int cell_size,                              //小格子的大小
+    int max_threshold, int min_threshold) :     //阈值,这个对于所有提取的fast点都是一样的吧? TODO 
+    width_(width), height_(height), 
+    max_threshold_(max_threshold), min_threshold_(min_threshold), 
+    cell_size_(cell_size)
 {
+    //step 1 确定真正使用的cell的大小
+    //避免出现网格比图像还要大的情况
     cell_size_ = MIN(MIN(width_, height_), cell_size_);
+    //TODO 但是这个时候会出现网格比图像大的情况吗
     if(cell_size_ < MIN_CEIL_SIZE) cell_size_ = MIN_CEIL_SIZE;
 
+    //根据设计的最大网格的数目,来计算这个时候的cell大小(其实也就是cell的大小的极小值)
     int min_size = std::floor(std::sqrt(static_cast<float>(width_*height_)/MAX_GRIDS));
 
     if(cell_size_ < min_size) cell_size_ = min_size;
-
+    
+    //step 2 计算grid内的cell的行数和列数
     cell_n_cols_ = std::floor(static_cast<float>(width_)/cell_size_);
     cell_n_rows_ = std::floor(static_cast<float>(height_)/cell_size_);
 
+    //step 3 得到当前grid内的cell总数
     N_ = cell_n_cols_ * cell_n_rows_;
+
+    //step 4 其他参数进行初始化
+    //存储在x方向和y方向,cell的坐标
     cells_x_.resize(cell_n_cols_+1, 0);
     cells_y_.resize(cell_n_rows_+1, 0);
+    //存储每个cell的最大阈值? TODO 
     fast_threshold_.resize(N_, max_threshold_);
-
+    
+    //下面就是开始计算和设置"在x方向和y方向,cell的坐标"
     for (auto itr = cells_x_.begin() + 1; itr != cells_x_.end(); itr++)
         *itr = *(itr - 1) + cell_size_;
 
@@ -83,16 +100,34 @@ bool FastGrid::inBoundary(int id) const
 }
 
 //! FastDetector
-FastDetector::FastDetector(int width, int height, int border, int nlevels,
-                           int grid_size, int grid_min_size, int max_threshold, int min_threshold):
-    width_(width), height_(height), border_(border), nlevels_(nlevels), grid_min_size_(grid_min_size),
-    size_adjust_(grid_size!=grid_min_size), max_threshold_(max_threshold), min_threshold_(min_threshold),
-    threshold_(max_threshold_), grid_filter_(width, height, grid_size)
+//fast角点提取器的声明函数
+FastDetector::FastDetector(
+    int width, int height,                  //图像的大小
+    int border,                             //图像边界的大小
+    int nlevels,                            //特征图像金字塔的图层
+    int grid_size, int grid_min_size,       //图像网格尺寸
+    int max_threshold, int min_threshold):  //fast提取特征点使用的阈值
+    width_(width), height_(height), 
+    border_(border), 
+    nlevels_(nlevels), 
+    grid_min_size_(grid_min_size), 
+    size_adjust_(grid_size!=grid_min_size), //当这网格的允许的最小尺寸和一般尺寸设置得不一样的时候,就要设置标志,表示允许网格尺寸存在自动的调节
+    max_threshold_(max_threshold), min_threshold_(min_threshold),
+    threshold_(max_threshold_), 
+    grid_filter_(width, height, grid_size)  //调用构造函数生成一个网格对象
 {
+    //初始化为和图像金字塔具有相同的层数,用来存储不同层的特征序列
     corners_in_levels_.resize(nlevels_);
+
+    //每一层都生成一个网格对象
     for(int i = 0; i < nlevels_; ++i)
     {
-       detect_grids_.push_back(FastGrid(width_>>i, height_>>i, grid_size, max_threshold_, min_threshold_));
+       detect_grids_.push_back(
+           FastGrid(
+               width_>>i, height_>>i,           //每上升一层,大小就缩小一倍
+               grid_size,                       
+               max_threshold_, min_threshold_)
+           );
     }
 }
 

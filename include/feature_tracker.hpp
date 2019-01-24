@@ -94,13 +94,13 @@ public:
     /**
      * @brief 特征追踪器的构造函数
      * 
-     * @param[in] width             TODO 啥的宽度
-     * @param[in] height            TODO 啥的高度
+     * @param[in] width             图像宽度
+     * @param[in] height            图像高度
      * @param[in] grid_size         网格大小
-     * @param[in] border            TODO 边界宽度
-     * @param[in] report            是否汇报
-     * @param[in] verbose           是否输出详情
-     * @return FeatureTracker::Ptr  实例指针 
+     * @param[in] border            图像的边界宽度
+     * @param[in] report            是否汇报,默认为否
+     * @param[in] verbose           是否输出详情,默认均为否
+     * @return FeatureTracker::Ptr  实例指针
      */
     inline static FeatureTracker::Ptr create(int width, int height, int grid_size, int border, bool report = false, bool verbose = false)
     {return FeatureTracker::Ptr(new FeatureTracker(width, height, grid_size, border, report, verbose));}

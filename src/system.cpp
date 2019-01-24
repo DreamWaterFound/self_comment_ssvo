@@ -1,3 +1,13 @@
+/**
+ * @file system.cpp
+ * @author guoqing (1337841346@qq.com)
+ * @brief 系统的主框架的实现
+ * @version 0.1
+ * @date 2019-01-24
+ * 
+ * @copyright Copyright (c) 2019
+ * 
+ */
 #include "config.hpp"
 #include "system.hpp"
 #include "optimizer.hpp"
@@ -7,26 +17,38 @@
 
 namespace ssvo{
 
+///配置文件的路径
 std::string Config::file_name_;
-
+///时间记录器
 TimeTracing::Ptr sysTrace = nullptr;
 
-System::System(std::string config_file, std::string calib_flie) :
-    stage_(STAGE_INITALIZE), status_(STATUS_INITAL_RESET),
-    last_frame_(nullptr), current_frame_(nullptr), reference_keyframe_(nullptr),loopId_(0)
+//构造函数
+System::System(std::string config_file,
+               std::string calib_flie) :
+    stage_(STAGE_INITALIZE), 
+    status_(STATUS_INITAL_RESET),
+    last_frame_(nullptr), 
+    current_frame_(nullptr), 
+    reference_keyframe_(nullptr),
+    loopId_(0)      //检测到的发生回环检测的关键帧的id为0?
 {
+    //step 1 检查文件是否存在
     LOG_ASSERT(!calib_flie.empty()) << "Empty Calibration file input!!!";
     LOG_ASSERT(!config_file.empty()) << "Empty Config file input!!!";
     Config::file_name_ = config_file;
 
+    //step 2 创建摄像头模型
     AbstractCamera::Model model = AbstractCamera::checkCameraModel(calib_flie);
     if(AbstractCamera::Model::PINHOLE == model)
     {
+        //创建针孔相机模型
         PinholeCamera::Ptr pinhole_camera = PinholeCamera::create(calib_flie);
+        //NOTICE 注意这里的指针模式转换,右侧的是抽象类的指针,左侧是其子类的一个指针
         camera_ = std::static_pointer_cast<AbstractCamera>(pinhole_camera);
     }
     else if(AbstractCamera::Model::ATAN == model)
     {
+        //创建atan相机模型
         AtanCamera::Ptr atan_camera = AtanCamera::create(calib_flie);
         camera_ = std::static_pointer_cast<AbstractCamera>(atan_camera);
     }
@@ -35,32 +57,50 @@ System::System(std::string config_file, std::string calib_flie) :
         LOG(FATAL) << "Error camera model: " << model;
     }
 
+    //step 3 配置图像和特征提取器,跟踪器
     double fps = camera_->fps();
     if(fps < 1.0) fps = 1.0;
     //! image
     const int nlevel = Config::imageNLevel();
     const int width = camera_->width();
     const int height = camera_->height();
-    const int image_border = AlignPatch::Size;
+    const int image_border = AlignPatch::Size;      //TODO 不太明白为什么要这样子设置
     //! corner detector
     const int grid_size = Config::gridSize();
     const int grid_min_size = Config::gridMinSize();
     const int fast_max_threshold = Config::fastMaxThreshold();
     const int fast_min_threshold = Config::fastMinThreshold();
 
-    fast_detector_ = FastDetector::create(width, height, image_border, nlevel, grid_size, grid_min_size, fast_max_threshold, fast_min_threshold);
-    feature_tracker_ = FeatureTracker::create(width, height, 20, image_border, true);
-    initializer_ = Initializer::create(fast_detector_, true);
+    //HEREty
+    fast_detector_ = FastDetector::create(
+        width, height, 
+        image_border, 
+        nlevel, 
+        grid_size, grid_min_size, 
+        fast_max_threshold, fast_min_threshold);
+    
+    feature_tracker_ = FeatureTracker::create(
+        width, height, 
+        20,             //TODO 不明白为什么这里给设置成为了20 ?
+        image_border, 
+        true);          //产生汇报数据 TODO 啥是汇报数据
+    initializer_ = Initializer::create(
+        fast_detector_,
+        true);
 #ifdef SSVO_DBOW_ENABLE
+
+    //step 4 生成词袋模型
     std::string voc_dir = Config::DBoWDirectory();
 
     LOG_ASSERT(!voc_dir.empty()) << "Please check the config file! The DBoW directory is not set!";
     DBoW3::Vocabulary* vocabulary = new DBoW3::Vocabulary(voc_dir);
     DBoW3::Database* database= new DBoW3::Database(*vocabulary, true, 4);
 
+    //step 5 生成局部地图和回环检测器
     mapper_ = LocalMapper::create(vocabulary, database, fast_detector_, true, false);
 
     loop_closure_ = LoopClosure::creat(vocabulary, database);
+    //NOTICE 在这里开始了回环检测线程
     loop_closure_->startMainThread();
 
     mapper_->setLoopCloser(loop_closure_);
@@ -68,10 +108,13 @@ System::System(std::string config_file, std::string calib_flie) :
 #else
     mapper_ = LocalMapper::create(fast_detector_, true, false);
 #endif
+    //step 6 创建深度滤波器
     DepthFilter::Callback depth_fliter_callback = std::bind(&LocalMapper::createFeatureFromSeed, mapper_, std::placeholders::_1);
     depth_filter_ = DepthFilter::create(fast_detector_, depth_fliter_callback, true);
+    //step 7 创建可视化窗口
     viewer_ = Viewer::create(mapper_->map_, cv::Size(width, height));
 
+    //NOTICE 建图线程和深度滤波器线程是在这里开启的
     mapper_->startMainThread();
     depth_filter_->startMainThread();
 
@@ -82,6 +125,7 @@ System::System(std::string config_file, std::string calib_flie) :
 
 
     //! LOG and timer for system;
+    //step 7 设置系统的时间计数器和相关日志
     TimeTracing::TraceNames time_names;
     time_names.push_back("total");
     time_names.push_back("processing");
@@ -98,39 +142,51 @@ System::System(std::string config_file, std::string calib_flie) :
     log_names.push_back("num_feature_reproj");
     log_names.push_back("stage");
 
+    //step 8 轨迹
     string trace_dir = Config::timeTracingDirectory();
     sysTrace.reset(new TimeTracing("ssvo_trace_system", trace_dir, time_names, log_names));
 }
 
+//析构
 System::~System()
 {
+    //复位的时候清空各个缓冲器
     sysTrace.reset();
 
+    //停止进程,当前一共具有六个进程
     viewer_->setStop();
     depth_filter_->stopMainThread();
     mapper_->stopMainThread();
     loop_closure_->stopMainThread();
-
+    //这个特殊一些,要等一下
     viewer_->waitForFinish();
 }
 
-void System::process(const cv::Mat &image, const double timestamp)
+//处理帧,其实也算上是这个视觉里程计的主循环了吧
+void System::process(
+    const cv::Mat &image, 
+    const double timestamp)
 {
+    //start timer
     sysTrace->startTimer("total");
     sysTrace->startTimer("frame_create");
+
     //! get gray image
+    //step 1 get gray image
     double t0 = (double)cv::getTickCount();
     rgb_ = image;
     cv::Mat gray = image.clone();
     if(gray.channels() == 3)
         cv::cvtColor(gray, gray, cv::COLOR_RGB2GRAY);
 
+    //step 2 creat current frame
     current_frame_ = Frame::create(gray, timestamp, camera_);
     double t1 = (double)cv::getTickCount();
     LOG(WARNING) << "[System] Frame " << current_frame_->id_ << " create time: " << (t1-t0)/cv::getTickFrequency();
     sysTrace->log("frame_id", current_frame_->id_);
     sysTrace->stopTimer("frame_create");
 
+    //step 3 run processing part depend on stage
     sysTrace->startTimer("processing");
     if(STAGE_NORMAL_FRAME == stage_)
     {
@@ -146,6 +202,7 @@ void System::process(const cv::Mat &image, const double timestamp)
     }
     sysTrace->stopTimer("processing");
 
+    //step 4 operation after a frame
     finishFrame();
 }
 
@@ -459,6 +516,7 @@ void System::finishFrame()
     sysTrace->startTimer("finish");
     cv::Mat image_show;
 //    Stage last_stage = stage_;
+    //step 1 根据上一帧的工作内容,更新状态和要显示的位姿等数据
     if(STAGE_NORMAL_FRAME == stage_)
     {
         if(STATUS_TRACKING_BAD == status_)
@@ -485,11 +543,14 @@ void System::finishFrame()
     }
 
     //! update
+    //step 2 当前帧变上一帧
     last_frame_ = current_frame_;
 
     //! display
+    //step 3 绘制当前帧
     viewer_->setCurrentFrame(current_frame_, image_show);
 
+    //step 4 时间记录器,日志,轨迹记录等操作
     sysTrace->log("stage", stage_);
     sysTrace->stopTimer("finish");
     sysTrace->stopTimer("total");

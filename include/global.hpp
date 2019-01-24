@@ -59,6 +59,8 @@ using Sophus::SE3d;
     #define MAX(a,b)  ((a) < (b) ? (b) : (a))
 #endif
 
+#define SSVO_DBOW_ENABLE
+
 ///图像金字塔,可以看到就是一个图像的数组
 typedef std::vector<cv::Mat> ImgPyr;
 
@@ -80,7 +82,7 @@ inline int Rand(int min, int max)
 { return (((double)distribution(rd) * (max - min + 1))) + min;}
 
 /**
- * @brief 基类,它的子类都不可以被复制
+ * @brief 基类,它的子类都不可以被复制 
  * 
  */
 class noncopyable
