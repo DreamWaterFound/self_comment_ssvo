@@ -77,7 +77,7 @@ public:
      * 
      * @param[in] width             网格的宽度
      * @param[in] height            网格的高度
-     * @param[in] cell_size         网格的大小      TODO 这个不是和前面的参数意义重复了吗
+     * @param[in] cell_size         每个cell的大小 ???? TODO
      * @param[in] max_threshold     最大阈值? TODO
      * @param[in] min_threshold     最小阈值? TODO
      */
@@ -128,8 +128,8 @@ public:
 
 public:
 
-    const int width_;                   ///<调用构造函数时设置的图像宽度
-    const int height_;                  ///<调用构造函数时设置的图像高度
+    const int width_;                   ///<TODO 宽度
+    const int height_;                  ///<TODO 高度
     const int max_threshold_;           ///<最大阈值
     const int min_threshold_;           ///<最小阈值
 
@@ -139,9 +139,9 @@ private:
     int cell_n_cols_;                   ///<cell的列数
     int cell_n_rows_;                   ///<cell的行数
     int N_;                             ///<总cell的个数
-    std::vector<int> cells_x_;          ///<存储在x方向上每个cell的坐标
-    std::vector<int> cells_y_;          ///<存储在y方向上每个cell的坐标
-    std::vector<int> fast_threshold_;   ///<存储了每个cell的阈值 TODO 一直都是保存最大阈值? 
+    std::vector<int> cells_x_;          ///<TODO
+    std::vector<int> cells_y_;          ///<TODO
+    std::vector<int> fast_threshold_;   ///<存储了每个cell的阈值? TODO 
 };
 
 ///角点序列类型声明
@@ -302,7 +302,7 @@ private:
     ///线程锁
     std::mutex mutex_fast_detector_;
 
-    ///存储每一层的网格对象
+    ///网各类的序列 TODO 
     std::vector<FastGrid> detect_grids_;
 
     ///按图像金字塔的层数来存储的corner序列 
