@@ -5,6 +5,7 @@
 
 namespace ssvo{
 
+//在初始化过程中,候选帧的最小提取角点个数
 int FrameCandidate::size = 1000;
 
 FrameCandidate::FrameCandidate(const Frame::Ptr &frame) :
@@ -118,9 +119,18 @@ int FrameCandidate::checkTracking(const int min_idx, const int max_idx, const in
     return delta;
 }
 
-Initializer::Initializer(const FastDetector::Ptr &fast_detector, bool verbose):
-    fast_detector_(fast_detector), cand_ref_(nullptr), cand_cur_(nullptr), cand_last_(nullptr), finished_(false), verbose_(verbose)
+//初始化器 构造函数
+Initializer::Initializer(
+    const FastDetector::Ptr &fast_detector,     //特征提取器句柄
+    bool verbose):                              //是否产生详情
+        fast_detector_(fast_detector), 
+        cand_ref_(nullptr),                         //候选参考帧
+        cand_cur_(nullptr),                         //候选当前帧
+        cand_last_(nullptr),                        //候选的上一帧
+        finished_(false),                           //当是否完成的标志
+        verbose_(verbose)                           
 {
+    //设置候选帧中提取的最小角点数目
     FrameCandidate::size = Config::initMinCorners();
 };
 

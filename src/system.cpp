@@ -64,14 +64,16 @@ System::System(std::string config_file,
     const int nlevel = Config::imageNLevel();
     const int width = camera_->width();
     const int height = camera_->height();
-    const int image_border = AlignPatch::Size;      //TODO 不太明白为什么要这样子设置
+    const int image_border = AlignPatch::Size;      //TODO 不太明白为什么要这样子设置。
+                                                    //猜测应该是考虑到图像对齐块的大小,需要给图像周围多加上这些大小的空白像素
+                                                    //或者是从图像边界上删除这些大小的像素不参与图像对齐
     //! corner detector
     const int grid_size = Config::gridSize();
     const int grid_min_size = Config::gridMinSize();
     const int fast_max_threshold = Config::fastMaxThreshold();
     const int fast_min_threshold = Config::fastMinThreshold();
 
-    //HEREty
+    
     fast_detector_ = FastDetector::create(
         width, height, 
         image_border, 
@@ -83,33 +85,46 @@ System::System(std::string config_file,
         width, height, 
         20,             //TODO 不明白为什么这里给设置成为了20 ?
         image_border, 
-        true);          //产生汇报数据 TODO 啥是汇报数据
+        true);          //产生汇报数据 TODO 啥是汇报数据 
     initializer_ = Initializer::create(
         fast_detector_,
         true);
 #ifdef SSVO_DBOW_ENABLE
 
     //step 4 生成词袋模型
+    //获取词典保存路径
     std::string voc_dir = Config::DBoWDirectory();
-
     LOG_ASSERT(!voc_dir.empty()) << "Please check the config file! The DBoW directory is not set!";
+    //根据保存的词典创建词袋模型
     DBoW3::Vocabulary* vocabulary = new DBoW3::Vocabulary(voc_dir);
-    DBoW3::Database* database= new DBoW3::Database(*vocabulary, true, 4);
+    //接着根据词典创建数据库
+    DBoW3::Database* database= new DBoW3::Database(
+        *vocabulary,    //词典句柄 
+        true,           //使用直接索引来存储特征索引(目前还不是很明白)
+        4);             //和向词袋模型中添加图像时, 词典树节点的层数有关
 
     //step 5 生成局部地图和回环检测器
-    mapper_ = LocalMapper::create(vocabulary, database, fast_detector_, true, false);
+    mapper_ = LocalMapper::create(
+        vocabulary,         //词典
+        database,           //数据库
+        fast_detector_,     //fast角点探测器句柄
+        true, false);       //汇报信息设置
 
     loop_closure_ = LoopClosure::creat(vocabulary, database);
     //NOTICE 在这里开始了回环检测线程
     loop_closure_->startMainThread();
 
     mapper_->setLoopCloser(loop_closure_);
-    loop_closure_->setLocalMapper(mapper_);
+    loop_closure_->setLocalMapper(mapper_);         //这个不应该是在回环检测线程创建之前进行吗? TODO 
 #else
     mapper_ = LocalMapper::create(fast_detector_, true, false);
 #endif
     //step 6 创建深度滤波器
-    DepthFilter::Callback depth_fliter_callback = std::bind(&LocalMapper::createFeatureFromSeed, mapper_, std::placeholders::_1);
+    //设置回调函数句柄
+    DepthFilter::Callback depth_fliter_callback = std::bind(
+        &LocalMapper::createFeatureFromSeed,        //待绑定函数句柄
+        mapper_,                                    //参数1,局部地图句柄 
+        std::placeholders::_1);
     depth_filter_ = DepthFilter::create(fast_detector_, depth_fliter_callback, true);
     //step 7 创建可视化窗口
     viewer_ = Viewer::create(mapper_->map_, cv::Size(width, height));
@@ -118,6 +133,7 @@ System::System(std::string config_file,
     mapper_->startMainThread();
     depth_filter_->startMainThread();
 
+    //每一帧的耗时
     time_ = 1000.0/fps;
 
     options_.min_kf_disparity = 50;//MIN(Config::imageHeight(), Config::imageWidth())/5;
@@ -244,58 +260,74 @@ System::Status System::initialize()
 
 System::Status System::tracking()
 {
+    //首先停止局部地图更新
     std::unique_lock<std::mutex> lock(mapper_->map_->mutex_update_);
     //! loop closure need
     if(loop_closure_->update_finish_ == true)
     {
+        //当回环检测的更新过程完成以后再进行下面的操作
+        //但是没有太看明白
         KeyFrame::Ptr ref = last_frame_->getRefKeyFrame();
         SE3d Tlr = last_frame_->Tcw()* ref->beforeUpdate_Tcw_.inverse();
         last_frame_->setTcw( Tlr * ref->Tcw() );
         loop_closure_->update_finish_ = false;
     }
 
+    //设置参考关键帧
     current_frame_->setRefKeyFrame(reference_keyframe_);
 
     //! track seeds
+    //深度滤波器开始跟踪当前帧
     depth_filter_->trackFrame(last_frame_, current_frame_);
 
-    // TODO 先验信息怎么设置？
+    // TODO 先验信息怎么设置？[师兄注释]
+    //现将当前帧的位姿设置为和上一帧相同
     current_frame_->setPose(last_frame_->pose());
     //! alignment by SE3
     AlignSE3 align;
     sysTrace->startTimer("img_align");
+    //当前帧开始和上一帧进行图像对齐
     align.run(last_frame_, current_frame_, Config::alignTopLevel(), Config::alignBottomLevel(), 30, 1e-8);
     sysTrace->stopTimer("img_align");
 
     //! track local map
     sysTrace->startTimer("feature_reproj");
+    //局部地图在当前帧上进行重投影操作
     int matches = feature_tracker_->reprojectLoaclMap(current_frame_);
     sysTrace->stopTimer("feature_reproj");
     sysTrace->log("num_feature_reproj", matches);
     LOG(WARNING) << "[System] Track with " << matches << " points";
 
-    // TODO tracking status
+    // TODO tracking status [师兄添加]
+    //如果重投影所得到的点的数目不符合要求,那么说明本次追踪失败了
     if(matches < Config::minQualityFts())
         return STATUS_TRACKING_BAD;
 
     //! motion-only BA
     sysTrace->startTimer("motion_ba");
+    //运动BA
     Optimizer::motionOnlyBundleAdjustment(current_frame_, false, false, true);
     sysTrace->stopTimer("motion_ba");
 
     sysTrace->startTimer("per_depth_filter");
+    //查看当前帧是否满足创建一个新关键帧的条件
     if(createNewKeyFrame())
     {
+        //如果是,那么就现在深度滤波器中插入一帧和参考关键帧
+        //这里的插入操作可能和自己想到的不一样
         depth_filter_->insertFrame(current_frame_, reference_keyframe_);
+        //然后在建图器中插入参考关键帧 TODO 为什么是这样子的操作?
         mapper_->insertKeyFrame(reference_keyframe_);
     }
     else
     {
+        //否则的话就只是插入当前帧
         depth_filter_->insertFrame(current_frame_, nullptr);
     }
     sysTrace->stopTimer("per_depth_filter");
 
     sysTrace->startTimer("light_affine");
+    //TODO 计算仿射矩阵?
     calcLightAffine();
     sysTrace->stopTimer("light_affine");
 

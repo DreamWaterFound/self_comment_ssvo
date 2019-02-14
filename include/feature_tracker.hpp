@@ -149,17 +149,18 @@ private:
      * 
      */
     struct Option{
-        int border;                 ///<图像边缘宽度? TODO
+        int border;                 ///<图像边缘宽度
         int max_matches;            ///<最大匹配数目
-        int max_track_kfs;          ///<最大追踪的关键帧
+        int max_track_kfs;          ///<最大追踪的关键帧数目
         int num_align_iter;         ///<对齐操作的最大迭代次数
         double max_align_epsilon;   ///<对齐操作的误差阈值
         double max_align_error2;    ///<TODO 
     } options_;
 
-    ///Grid对象 TODO 
+    ///存储有当前图像中特征点句柄的网格对象
     Grid<Feature::Ptr> grid_;
-    ///网格顺序,存储的是id
+    ///网格顺序,存储的是id TODO 但是在程序中这样子理解不上去
+    //它的长度和 grid_ 中所包含的cells的个数相同
     std::vector<size_t> grid_order_;
 
     ///是否汇报

@@ -221,10 +221,10 @@ private:
     struct Option{
         double min_disparity;           ///<最小视差
         int min_redundant_observations; ///<最小的重复观测数目
-        int max_features;               ///<最大的特征数
-        int num_reproject_kfs;          ///<重投影的帧数 TODO ?
+        int max_features;               ///<最大的特征数,其实也是在每个关键帧中所提取出的最小的特征点数目(从局部地图的沟槽函数中看出来)
+        int num_reproject_kfs;          ///<重投影的关键帧数 TODO ?
         int num_local_ba_kfs;           ///<进行局部BA的关键帧个数
-        int min_local_ba_connected_fts; ///<最小的局部BA所连接的特征点个数?
+        int min_local_ba_connected_fts; ///<最小的局部BA所连接的特征点个数? TODO
         int num_align_iter;             ///<什么对齐的迭代次数? TODO 
         double max_align_epsilon;       ///<最大的对齐误差
         double max_align_error2;        ///<最大对齐误差的平方

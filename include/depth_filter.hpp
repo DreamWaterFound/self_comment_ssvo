@@ -116,10 +116,7 @@ private:
      */
     DepthFilter(const FastDetector::Ptr &fast_detector, const Callback &callback, bool report, bool verbose);
 
-    /**
-     * @brief 一个参数为种子对象的指针
-     * 
-     */
+    // 存储深度滤波器的回调函数
     Callback seed_coverged_callback_;
 
     /**
@@ -232,7 +229,7 @@ private:
         //! max keyframes for seeds tracking(exclude current keyframe)
         int max_kfs;                    ///<种子追踪的最多的关键帧数目,除了当前关键帧
         int max_features;               ///<最大的特征点个数
-        double max_perprocess_kfs;      ///<最大处理的关键帧数目
+        double max_perprocess_kfs;      ///<最大预处理的关键帧数目
         double max_epl_length;          ///<最大的极线长度
         double epl_dist2_threshold;     ///<距离极线的距离的平方的阈值
         double klt_epslion;             ///<TODO

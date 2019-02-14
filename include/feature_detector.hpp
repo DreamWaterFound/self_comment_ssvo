@@ -1,3 +1,5 @@
+
+
 /**
  * @file feature_detector.hpp
  * @author guoqing (1337841346@qq.com)
@@ -139,9 +141,9 @@ private:
     int cell_n_cols_;                   ///<cell的列数
     int cell_n_rows_;                   ///<cell的行数
     int N_;                             ///<总cell的个数
-    std::vector<int> cells_x_;          ///<TODO
-    std::vector<int> cells_y_;          ///<TODO
-    std::vector<int> fast_threshold_;   ///<存储了每个cell的阈值? TODO 
+    std::vector<int> cells_x_;          ///<存储每个cell在x方向的图像坐标
+    std::vector<int> cells_y_;          ///<存储每个cell在y方向的图像坐标
+    std::vector<int> fast_threshold_;   ///<存储了每个cell用于提取fast角点的阈值? TODO 
 };
 
 ///角点序列类型声明

@@ -187,7 +187,7 @@ private:
     KeyFrame::Ptr reference_keyframe_;          //参考关键帧
     KeyFrame::Ptr last_keyframe_;               //上一个关键帧, NOTICE 注意这个和上面的参考关键帧不同,这还不是一个东西
 
-    //耗时
+    //每一帧耗时
     double time_;
     
     //回环时添加

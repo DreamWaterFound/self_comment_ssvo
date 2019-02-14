@@ -24,6 +24,7 @@ std::ostream& operator<<(std::ostream& out, const Feature& ft)
     return out;
 }
 
+//和局部地图相关的时间追踪器
 TimeTracing::Ptr mapTrace = nullptr;
 
 //! LocalMapper
@@ -67,25 +68,44 @@ LocalMapper::LocalMapper(const FastDetector::Ptr fast, bool report, bool verbose
 
 }
 #ifdef SSVO_DBOW_ENABLE
-LocalMapper::LocalMapper(DBoW3::Vocabulary* vocabulary, DBoW3::Database* database,const FastDetector::Ptr fast, bool report, bool verbose) :
-        fast_detector_(fast), report_(report), verbose_(report&&verbose),
-        mapping_thread_(nullptr), stop_require_(false), vocabulary_(vocabulary), database_(database)
+//HERE
+//局部地图的构造函数,使用词袋模型的版本
+LocalMapper::LocalMapper(
+    DBoW3::Vocabulary* vocabulary,      //词典
+    DBoW3::Database* database,          //数据库
+    const FastDetector::Ptr fast,       //fast特征点提取器句柄
+    bool report, bool verbose) :        //汇报设置
+        fast_detector_(fast),           
+        report_(report), 
+        verbose_(report&&verbose),
+        mapping_thread_(nullptr),       //建图线程设置为空
+        stop_require_(false),           //终止请求为空
+        vocabulary_(vocabulary),        
+        database_(database)
 {
+    //创建地图 
     map_ = Map::create();
 
+    //创建brief描述子计算器
     brief_ = BRIEF::create(2.0, Config::imageNLevel());//,fast_detector_->getHeight(),fast_detector_->getWidth());
 
+    //最小视差设置为100  TODO 这个单位是什么啊?
     options_.min_disparity = 100;
+    //最小的对地图点的重复观测次数设置为3次
     options_.min_redundant_observations = 3;
+    //TODO 为什么这里的最大特征点数目,反而是定义的"每个关键帧中的最小角点数目"呢?
     options_.max_features = Config::minCornersPerKeyFrame();
     options_.num_reproject_kfs = MAX(Config::maxReprojectKeyFrames(), 2);
     options_.num_local_ba_kfs = MAX(Config::maxLocalBAKeyFrames(), 1);
+    //最小的局部BA过程中所链接到的特征点个数?
     options_.min_local_ba_connected_fts = Config::minLocalBAConnectedFts();
     options_.num_align_iter = 15;
     options_.max_align_epsilon = 0.01;
     options_.max_align_error2 = 3.0;
+    //TODO 什么的找回率?
     options_.min_found_ratio_ = 0.15;
 
+    //下面的内容目前不关心
     //! LOG and timer for system;
     TimeTracing::TraceNames time_names;
     time_names.push_back("total");
@@ -101,7 +121,7 @@ LocalMapper::LocalMapper(DBoW3::Vocabulary* vocabulary, DBoW3::Database* databas
     log_names.push_back("num_matched");
     log_names.push_back("num_fusion");
 
-
+    //看来相关时间的记录信息还要保存在外部文件中
     string trace_dir = Config::timeTracingDirectory();
     mapTrace.reset(new TimeTracing("ssvo_trace_map", trace_dir, time_names, log_names));
 
@@ -147,6 +167,7 @@ void LocalMapper::createInitalMap(const Frame::Ptr &frame_ref, const Frame::Ptr 
     LOG_IF(INFO, report_) << "[Mapper] Creating inital map with " << map_->MapPointsInMap() << " map points";
 }
 
+//开启局部建图部分的主线程
 void LocalMapper::startMainThread()
 {
     if(mapping_thread_ == nullptr)
@@ -301,6 +322,7 @@ void LocalMapper::finishLastKeyFrame()
 //    DepthFilter::updateByConnectedKeyFrames(keyframe_last_, 3);
 }
 
+//深度滤波器的回调函数
 void LocalMapper::createFeatureFromSeed(const Seed::Ptr &seed)
 {
     //! create new feature
@@ -986,6 +1008,8 @@ KeyFrame::Ptr LocalMapper::relocalizeByDBoW(const Frame::Ptr &frame, const Corne
 }
 
 #ifdef SSVO_DBOW_ENABLE
+
+//设置局部地图的回环检测器
 void LocalMapper::setLoopCloser(LoopClosure::Ptr loop_closure)
 {
     loop_closure_ = loop_closure;

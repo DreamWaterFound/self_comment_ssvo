@@ -49,10 +49,13 @@ FastGrid::FastGrid(
     N_ = cell_n_cols_ * cell_n_rows_;
 
     //step 4 其他参数进行初始化
-    //存储在x方向和y方向,cell的坐标
+    //存储在x方向和y方向,cell的坐标的变量,在这里重新设置它们的大小;
+    //这里的+1是因为要存储最后一个"不完整"的格子的坐标.如果记一个格子的宽度为w,那么cells_x_中存储的数据看起来是这个样子的:
+    // 0 w 2w 3w 4w 5w 6w width
+    //其中一共有7个cell,但是却需要使用7+1=8个元素来存储
     cells_x_.resize(cell_n_cols_+1, 0);
     cells_y_.resize(cell_n_rows_+1, 0);
-    //存储每个cell的最大阈值? TODO 
+    //存储每个cell(提取fast角点时)的最大阈值
     fast_threshold_.resize(N_, max_threshold_);
     
     //下面就是开始计算和设置"在x方向和y方向,cell的坐标"
@@ -61,7 +64,7 @@ FastGrid::FastGrid(
 
     for (auto itr = cells_y_.begin() + 1; itr != cells_y_.end(); itr++)
         *itr = *(itr - 1) + cell_size_;
-
+    //尾端的cell要进行这个处理
     cells_x_[cell_n_cols_] = width_;
     cells_y_[cell_n_rows_] = height_;
 }
@@ -114,7 +117,7 @@ FastDetector::FastDetector(
     size_adjust_(grid_size!=grid_min_size), //当这网格的允许的最小尺寸和一般尺寸设置得不一样的时候,就要设置标志,表示允许网格尺寸存在自动的调节
     max_threshold_(max_threshold), min_threshold_(min_threshold),
     threshold_(max_threshold_), 
-    grid_filter_(width, height, grid_size)  //调用构造函数生成一个网格对象
+    grid_filter_(width, height, grid_size)  //给定图像大小和网格大小,创建一个保存有角点信息的网格对象
 {
     //初始化为和图像金字塔具有相同的层数,用来存储不同层的特征序列
     corners_in_levels_.resize(nlevels_);
@@ -136,7 +139,7 @@ size_t FastDetector::detect(const ImgPyr &img_pyr, Corners &new_corners, const C
 {
     std::unique_lock<std::mutex> lock(mutex_fast_detector_);
 
-    LOG_ASSERT(img_pyr.size() == nlevels_) << "Unmatch size of ImgPyr(" << img_pyr.size() << ") with nlevel(" << nlevels_ << ")";
+    LOG_ASSERT(img_pyr.size() == (unsigned int)nlevels_) << "Unmatch size of ImgPyr(" << img_pyr.size() << ") with nlevel(" << nlevels_ << ")";
     LOG_ASSERT(img_pyr[0].size() == cv::Size(width_, height_)) << "Error cv::Mat size: " << img_pyr[0].size();
 
     //! 1. Corners detect in all levels

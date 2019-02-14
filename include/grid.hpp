@@ -339,7 +339,7 @@ private:
 };  //class grid 
 
 /**
- * @brief 重新设置网格的自适应???/
+ * @brief 重新设置网格的自适应???
  * @detials 注意这个是个全局函数,不是Grid类的成员
  * @tparam T            网格中每个cell的数据类型
  * @param[in] grid      网格对象

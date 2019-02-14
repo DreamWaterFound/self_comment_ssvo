@@ -131,18 +131,34 @@ cv::Mat showFeatures(const cv::Mat& src, const std::vector<Feature::Ptr> &featur
     return img;
 }
 
-LoopClosure::LoopClosure(DBoW3::Vocabulary* vocabulary, DBoW3::Database* database_):
-        vocabulary_(vocabulary), database_(database_),LastLoopKFid_(0),
-        ifFinished(true),RunningGBA_(false), FinishedGBA_(true), StopGBA_(false), thread_GBA_(NULL),
-        FullBAIdx_(0),update_finish_(false),loop_time_(0)
+//构造函数
+LoopClosure::LoopClosure(
+    DBoW3::Vocabulary* vocabulary,      //词典句柄
+    DBoW3::Database* database_):        //数据库句柄
+        vocabulary_(vocabulary),            
+        database_(database_),
+        LastLoopKFid_(0),                   //上一个构成闭环的关键帧id
+        ifFinished(true),                   //当前回环检测的全局BA过程已经完成
+        RunningGBA_(false),                 //当前不需要进行全局BA
+        FinishedGBA_(true),                 //全局BA的过程已经结束
+        StopGBA_(false),                    //没有停止全局BA过程的请求
+        thread_GBA_(NULL),                  //暂时不创建全局BA线程
+        FullBAIdx_(0),                      //TODO
+        update_finish_(false),              //闭环后的更新过程....没有完成?  TODO
+        loop_time_(0)                       //通过最小得分计算的闭环次数，仅用于输出信息,这里设置为0
 {
+    //初始化从世界坐标系到当前帧的仿射变换为初始值 (TODO 所以到底是个什么值?)
     sim3_cw = Sophus::Sim3d();
+    //连续性检测的阈值设置为3
     mnCovisibilityConsistencyTh = 3;
 }
+
+//开始回环检测的主线程
 void LoopClosure::startMainThread()
 {
     if(loop_closure_thread_ == nullptr)
     {
+        //创建回环检测线程
         loop_closure_thread_ = std::make_shared<std::thread>(std::bind(&LoopClosure::run,this));
     }
 }
@@ -1562,6 +1578,7 @@ int LoopClosure::SearchByProjection(int th)
     return nmatches;
 }
 
+//设置回环检测线程所依赖的局部地图句柄
 void LoopClosure::setLocalMapper(std::shared_ptr<LocalMapper> local_mapper)
 {
     local_mapper_ = local_mapper;

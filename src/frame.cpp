@@ -13,18 +13,29 @@ const cv::Size Frame::optical_win_size_ = cv::Size(21,21);
 float Frame::light_affine_a_ = 1.0f;
 float Frame::light_affine_b_ = 0.0f;
 
-Frame::Frame(const cv::Mat &img, const double timestamp, const AbstractCamera::Ptr &cam) :
-    id_(next_id_++), timestamp_(timestamp), cam_(cam), max_level_(Config::imageNLevel()-1)
+//帧的构造函数
+Frame::Frame(const cv::Mat &img,                //当前时刻得到的灰度图像
+             const double timestamp,            //时间戳
+             const AbstractCamera::Ptr &cam) :  //相机模型
+    id_(next_id_++), 
+    timestamp_(timestamp), 
+    cam_(cam), 
+    max_level_(Config::imageNLevel()-1)
 {
+    //生成位姿并进行初始化
     Tcw_ = SE3d(Matrix3d::Identity(), Vector3d::Zero());
     Twc_ = Tcw_.inverse();
 
+//师兄注释掉的
 //    utils::createPyramid(img, img_pyr_, nlevels_);
+
     //! create pyramid for optical flow
+    //为光流创建金字塔
     cv::buildOpticalFlowPyramid(img, optical_pyr_, optical_win_size_, max_level_, false);
     LOG_ASSERT(max_level_ == (int) optical_pyr_.size()-1) << "The pyramid level is unsuitable! maxlevel should be " << optical_pyr_.size()-1;
 
     //! copy to image pyramid
+    //将图像金字塔中的图像直接复制到光流金字塔中
     img_pyr_.resize(optical_pyr_.size());
     for(size_t i = 0; i < optical_pyr_.size(); i++)
         optical_pyr_[i].copyTo(img_pyr_[i]);

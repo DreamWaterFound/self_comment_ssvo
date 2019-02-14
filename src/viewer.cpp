@@ -2,14 +2,21 @@
 
 namespace ssvo{
 
-Viewer::Viewer(const Map::Ptr &map, cv::Size image_size) :
-    map_(map), image_size_(image_size), required_stop_(false), is_finished_(false)
+//可视化查看器的创建
+Viewer::Viewer(const Map::Ptr &map,     //地图句柄
+               cv::Size image_size) :   //图像大小(指的是相机拍摄到的图像大小)
+    map_(map),                  
+    image_size_(image_size), 
+    required_stop_(false), 
+    is_finished_(false)
 {
+    //一些绘图属性设置
     map_point_size = 3;
     key_frame_size = 0.05;
     key_frame_line_width= 2;
     key_frame_graph_line_width = 1;
 
+    //创建可视化查看器进程
     pongolin_thread_ = std::make_shared<std::thread>(std::bind(&Viewer::run, this));
 }
 

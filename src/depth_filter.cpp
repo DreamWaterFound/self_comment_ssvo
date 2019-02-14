@@ -110,11 +110,21 @@ void showAffine(const cv::Mat &src, const Vector2d &px_ref, const Matrix2d &A_re
 TimeTracing::Ptr dfltTrace = nullptr;
 
 //! DepthFilter
-DepthFilter::DepthFilter(const FastDetector::Ptr &fast_detector, const Callback &callback, bool report, bool verbose) :
-    seed_coverged_callback_(callback), fast_detector_(fast_detector),
-    report_(report), verbose_(report&&verbose), filter_thread_(nullptr), track_thread_enabled_(true), stop_require_(false)
+//深度滤波器的构造函数
+DepthFilter::DepthFilter(
+    const FastDetector::Ptr &fast_detector,     //特征点提取器句柄
+    const Callback &callback,                   //回调函数指针
+    bool report, bool verbose) :                //汇报信息控制
+        seed_coverged_callback_(callback),          //设置回调函数指针
+        fast_detector_(fast_detector),              
+        report_(report),    
+        verbose_(report&&verbose), 
+        filter_thread_(nullptr),                    //暂时不创建深度滤波器句柄
+        track_thread_enabled_(true),                //使能追踪线程
+        stop_require_(false)                        //暂时没有对深度滤波器线程的终止请求
 {
     options_.max_kfs = 5;
+    //TODO 同样的疑问,为什么这里的最大特征点数目,是配置文件中设定的"每个关键帧的最小角点数目"?
     options_.max_features = Config::minCornersPerKeyFrame();
     options_.max_epl_length = 1000;
     options_.epl_dist2_threshold = 16;
@@ -125,6 +135,7 @@ DepthFilter::DepthFilter(const FastDetector::Ptr &fast_detector, const Callback 
     options_.min_frame_disparity = 0.0;//2.0;
     options_.min_pixel_disparity = 4.5;
 
+    //后面的内容目前我们暂时不关注
     //! LOG and timer for system;
     TimeTracing::TraceNames time_names;
     time_names.push_back("total_without_klt");
@@ -153,6 +164,7 @@ void DepthFilter::disableTrackThread()
     track_thread_enabled_ = false;
 }
 
+//开启深度滤波器的主线程
 void DepthFilter::startMainThread()
 {
     if(filter_thread_ == nullptr)

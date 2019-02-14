@@ -45,7 +45,7 @@ public:
     std::vector<int> level;
     ///什么的索引集合? TODO
     std::vector<int64_t> idx;
-    ///什么大小??? TODO 
+    ///候选帧中提取角点的最小数目
     static int size;
 
     /**
@@ -296,7 +296,7 @@ private:
     ///帧缓冲器,也是一个先进先出队列
     std::deque<FrameCandidate::Ptr> frame_buffer_;
 
-    ///参考帧
+    ///参考帧 cand=候选
     FrameCandidate::Ptr cand_ref_;//！ front of frame_buffer_
     ///当前帧
     FrameCandidate::Ptr cand_cur_;

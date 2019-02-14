@@ -13,18 +13,33 @@ inline size_t Grid<Feature::Ptr>::getIndex(const Feature::Ptr &element)
         + static_cast<size_t>(px[0]/grid_size_);
 }
 
-FeatureTracker::FeatureTracker(int width, int height, int grid_size, int border, bool report, bool verbose) :
-    grid_(width, height, grid_size), report_(report), verbose_(report&&verbose)
+FeatureTracker::FeatureTracker(
+    int width, int height,  //图像大小
+    int grid_size,          //网格大小
+    int border,             //图像的边界大小
+    bool report,            //是否汇报
+    bool verbose) :         //是否记录详情
+        grid_(width, height, grid_size),    //给定图像大小和网格大小,创建一个存储特征点的网格对象
+        report_(report), 
+        verbose_(report&&verbose)
 {
+    //图像边界大小
     options_.border = border;
+    //最大特征点匹配数目
     options_.max_matches = 200;
+    //追踪到关键帧数目的最大值
     options_.max_track_kfs = Config::maxTrackKeyFrames();
+    //最大迭代次数
     options_.num_align_iter = 30;
+    //图像对齐过程中所允许的最大误差
     options_.max_align_epsilon = 0.01;
+    //TODO 这个还不知道是什么意思
     options_.max_align_error2 = 3.0;
 
     //! initialize grid
     grid_order_.resize(grid_.nCells());
+    //std::iota 会使用0值填充给定的序列
+    //下面的操作其实就是将grid_order_中的所有元素均设置为0
     std::iota(grid_order_.begin(), grid_order_.end(), 0);
 }
 
