@@ -31,16 +31,17 @@ public:
      * 
      * @param[in] dataset_path          数据集的路径
      * @param[in] association_file      关联文件,TUM数据集特有的
-     * @param[in] with_ground_truth     存储了真值的文件
+     * @param[in] with_ground_truth     是否读取的时候将真值一并读取出来
      */
     TUMDataReader(const string &dataset_path, const string &association_file, const bool with_ground_truth = false):
         dataset_path_(dataset_path), association_file_(association_file)
     {
-        //REVIEW  于问题研究无关,程序代码先不看
+        //找到数据集路径中的最后出现/或者\的位置,确定最后的目录位置
         size_t found = dataset_path.find_last_of("/\\");
         if(found + 1 != dataset_path.size())
             dataset_path_ += dataset_path.substr(found, 1);
 
+        //从关联文件中输入数据.其实下面的内容和ORB中的一样,但是多了对真值的读取部分
         std::ifstream file_stream;
         file_stream.open(association_file_.c_str());
         while (!file_stream.eof()) {
@@ -59,6 +60,7 @@ public:
                 ss >> depth;
                 depth_images_.push_back(dataset_path_ + depth);
                 ss >> time;
+                //如果指定了要读取真值
                 if(with_ground_truth)
                 {
                     std::vector<double> ground_truth(7);
@@ -68,8 +70,9 @@ public:
                 }
             }
         }
+        //关闭文件
         file_stream.close();
-
+        //图像序列数目的合法性检查
         N = timestamps_.size();
         if(N == 0)
             std::cerr << "No item read! Please check association file: " << association_file << std::endl;
