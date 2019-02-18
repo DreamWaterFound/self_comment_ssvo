@@ -34,11 +34,11 @@ public:
     ///指向自己类型的指针
     typedef std::shared_ptr<Feature> Ptr;
 
-    ///TODO 特征点的坐标?
+    ///特征点的坐标
     Vector2d px_;
     ///TODO 啥?
     Vector3d fn_;
-    ///TODO 特征所在的图层??
+    ///特征所在的图层
     int level_;
     ///指向它对应的地图点
     std::shared_ptr<MapPoint> mpt_;

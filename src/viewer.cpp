@@ -31,24 +31,26 @@ Viewer::Viewer(const Map::Ptr &map,     //地图句柄
     pongolin_thread_ = std::make_shared<std::thread>(std::bind(&Viewer::run, this));
 }
 
-
+//停止查看器进程
 void Viewer::setStop()
 {
     std::lock_guard<std::mutex> lock(mutex_stop_);
     required_stop_ = true;
 }
 
+//当前是否有停止当前进程的请求？
 bool Viewer::isRequiredStop()
 {
     std::lock_guard<std::mutex> lock(mutex_stop_);
     return required_stop_;
 }
 
+//等待本进程结束
 bool Viewer::waitForFinish()
 {
     if(!isRequiredStop())
         setStop();
-
+ 
     if(pongolin_thread_->joinable())
         pongolin_thread_->join();
     
@@ -226,6 +228,7 @@ void Viewer::run()
     pangolin::DestroyWindow(win_name);
 }
 
+//设置当前帧，没有太看懂要做什么。但是当前程序中貌似也没有使用到它
 void Viewer::setCurrentFrame(const Frame::Ptr &frame, const cv::Mat image)
 {
     std::lock_guard<std::mutex> lock(mutex_frame_);
@@ -285,8 +288,8 @@ void Viewer::drawKeyFrames(Map::Ptr &map, KeyFrame::Ptr &reference,
             //这里还只是绘制比当前遍历到的关键帧生成要晚的关键帧的共视关系
             if(ckf->id_ < kf->id_)
                 continue;
-            //HERE
-
+            
+            //然后的事情就是。。。连线
             Vector3f O2 = ckf->pose().translation().cast<float>();
             glVertex3f(O1[0], O1[1], O1[2]);
             glVertex3f(O2[0], O2[1], O2[2]);
@@ -296,6 +299,7 @@ void Viewer::drawKeyFrames(Map::Ptr &map, KeyFrame::Ptr &reference,
 
 }
 
+//绘制当前帧，其实就是在当前帧的位置上绘制相机模型
 void Viewer::drawCurrentFrame(const Matrix4d &pose, cv::Scalar color)
 {
     drawCamera(pose.matrix(), color);
@@ -304,12 +308,16 @@ void Viewer::drawCurrentFrame(const Matrix4d &pose, cv::Scalar color)
 //注意,这个是使用OpenCV方式来绘制图像
 void Viewer::drawCurrentImage(pangolin::GlTexture &gl_texture, cv::Mat &image)
 {
+    //错误检测
     if(image.empty())
         return;
 
+    //最终都要以彩色图显示啊
     if(image.type() == CV_8UC1)
         cv::cvtColor(image, image, CV_GRAY2RGB);
+    //pangolin中的图像更新
     gl_texture.Upload(image.data, GL_RGB, GL_UNSIGNED_BYTE);
+    //OpenCV图像窗口中也进行图像的更新
     cv::imshow("SSVO Current Image", image);
     //NOTICE 注意到,师兄应该也是注意到了我之前发现的问题,所以留出了刷新的时间
     cv::waitKey(1);
@@ -348,6 +356,7 @@ void Viewer::drawMapPoints(Map::Ptr &map, Frame::Ptr &frame)
     glEnd();
 }
 
+//几乎就是ORB-SLAM2中的实现
 void Viewer::drawCamera(const Matrix4d &pose, cv::Scalar color)
 {
     const float w = key_frame_size ;
@@ -357,6 +366,7 @@ void Viewer::drawCamera(const Matrix4d &pose, cv::Scalar color)
     glPushMatrix();
 
     //! col major
+    //也是这种矩阵的操作法
     glMultMatrixd(pose.data());
 
     glLineWidth(key_frame_line_width);
@@ -387,19 +397,26 @@ void Viewer::drawCamera(const Matrix4d &pose, cv::Scalar color)
     glPopMatrix();
 }
 
+//绘制在图像上的追踪到的点
 void Viewer::drawTrackedPoints(const Frame::Ptr &frame, cv::Mat &dst)
 {
     //! draw features
+    //获取图像金字塔中的底层图像
     const cv::Mat src = frame->getImage(0);
     std::vector<Feature::Ptr> fts = frame->getFeatures();
     cv::cvtColor(src, dst, CV_GRAY2RGB);
+
+    //TODO  ？
     int font_face = 1;
+    //目测式字体大小
     double font_scale = 0.5;
+    //对于每一个追踪到的特征点
     for(const Feature::Ptr &ft : fts)
     {
+        //画点，或者说就是画一个圈圈
         Vector2d ft_px = ft->px_;
         cv::Point2f px(ft_px[0], ft_px[1]);
-        cv::Scalar color(0, 255, 0);
+        cv::Scalar color(0, 255, 0);    //红色
         cv::circle(dst, px, 2, color, -1);
 
         // 这里就是在点上显示文本的数据
@@ -408,6 +425,8 @@ void Viewer::drawTrackedPoints(const Frame::Ptr &frame, cv::Mat &dst)
     }
 
     //! draw seeds
+    //遍历特征点种子
+    //REVIEW 自己运行一遍，找找这个种子。为啥我之前运行的时候就好像没有看到这个？
     std::vector<Feature::Ptr> seed_fts = frame->getSeeds();
     for(const Feature::Ptr &ft : seed_fts)
     {
@@ -415,6 +434,7 @@ void Viewer::drawTrackedPoints(const Frame::Ptr &frame, cv::Mat &dst)
         cv::Point2f px(ft->px_[0], ft->px_[1]);
         double convergence = 0;
         double scale = MIN(convergence, 256.0) / 256.0;
+        //红色到蓝色的渐变，表示不同权重的种子
         cv::Scalar color(255*scale, 0, 255*(1-scale));
         cv::circle(dst, px, 2, color, -1);
 
@@ -424,6 +444,7 @@ void Viewer::drawTrackedPoints(const Frame::Ptr &frame, cv::Mat &dst)
 
 }
 
+//绘制轨迹
 void Viewer::drawTrajectory(int frame_num)
 {
     std::lock_guard<std::mutex> lock(mutex_frame_);
@@ -431,10 +452,14 @@ void Viewer::drawTrajectory(int frame_num)
     glColor3f(color[0],color[1],color[2]);
     glLineWidth(2);
 
+    //绘制折线图
     glBegin(GL_LINE_STRIP);
 
+    //这个条件表达式的作用是，避免当没有帧可以绘制时出现问题
     size_t frame_count_max = frame_num == -1 ? frame_trajectory_.size() : static_cast<size_t>(frame_num);
     size_t frame_count = 0;
+    //REVIEW  查找一下，什么叫做rbegin() ？ rend() 又是啥？
+    //获得frame_trajectory_中所有的轨迹点
     for(auto itr = frame_trajectory_.rbegin(); itr != frame_trajectory_.rend() && frame_count < frame_count_max; itr++, frame_count++)
     {
         glVertex3f((float)(*itr)[0], (float)(*itr)[1], (float)(*itr)[2]);
@@ -442,6 +467,7 @@ void Viewer::drawTrajectory(int frame_num)
     glEnd();
 }
 
+//绘制关键帧的轨迹
 void Viewer::drawKfTraj(Map::Ptr &map)
 {
     std::lock_guard<std::mutex> lock(mutex_frame_);
@@ -453,11 +479,14 @@ void Viewer::drawKfTraj(Map::Ptr &map)
 
 
     std::vector<KeyFrame::Ptr> kfs = map->getAllKeyFrames();
-
+    //后面的lambda表达式没有看懂 REVIEW
+    //但是这句话应该就是对所有的关键帧按照id进行排序
     std::sort(kfs.begin(),kfs.end(),[](KeyFrame::Ptr a,KeyFrame::Ptr b)->bool{ return a->id_>b->id_;});
 
+    //遍历所有的关键帧
     for(const KeyFrame::Ptr &kf : kfs)
     {
+        //绘制折线
         Vector3f O1 = kf->pose().translation().cast<float>();
         glVertex3f((float)O1[0], (float)O1[1], (float)O1[2]);
 
