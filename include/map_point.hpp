@@ -292,7 +292,7 @@ public:
     uint64_t last_structure_optimal_;
 
 private:
-    ///这个地图点的位置
+    ///这个地图点的位置,虽然只是表示位置,但是变量名依旧起成了pose_
     Vector3d pose_;
     ///在不同的关键帧中得到的对当前帧的观测(观测结果是以特征描述子的形式保存的)
     std::unordered_map<KeyFramePtr, Feature::Ptr> obs_;
