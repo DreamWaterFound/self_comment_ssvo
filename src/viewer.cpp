@@ -91,7 +91,7 @@ void Viewer::run()
     pangolin::Var<bool> menu_show_connections("menu.Connections", true, true);
     pangolin::Var<bool> menu_show_current_connections("menu.Connections_cur", true, true);
 
-    //TODO 绘制的轨迹的持续长度?
+    //控制绘制的轨迹的规模
     const int trajectory_duration_max = 10000;
     pangolin::Var<int> settings_trajectory_duration("menu.Traj Duration",1000, 1, trajectory_duration_max,false);
 
@@ -138,7 +138,7 @@ void Viewer::run()
         Frame::Ptr frame;
         cv::Mat image;
         {
-            //锁住...帧的线程? TODO 并从其中获取帧对象和图像对象
+            //锁住帧的线程，并且从其中读取当前帧对象和当前帧图像
             std::lock_guard<std::mutex> lock(mutex_frame_);
             frame = frame_;
             image = image_;
@@ -406,7 +406,7 @@ void Viewer::drawTrackedPoints(const Frame::Ptr &frame, cv::Mat &dst)
     std::vector<Feature::Ptr> fts = frame->getFeatures();
     cv::cvtColor(src, dst, CV_GRAY2RGB);
 
-    //TODO  ？
+    //设置字体
     int font_face = 1;
     //目测式字体大小
     double font_scale = 0.5;
@@ -426,7 +426,7 @@ void Viewer::drawTrackedPoints(const Frame::Ptr &frame, cv::Mat &dst)
 
     //! draw seeds
     //遍历特征点种子
-    //REVIEW 自己运行一遍，找找这个种子。为啥我之前运行的时候就好像没有看到这个？
+    //实际运行的过程中，那些没有文字标注的点就是所谓的种子点；不过从实际运行效果上来看，种子点从蓝色变成红色的过程并不非常明显
     std::vector<Feature::Ptr> seed_fts = frame->getSeeds();
     for(const Feature::Ptr &ft : seed_fts)
     {
@@ -458,7 +458,7 @@ void Viewer::drawTrajectory(int frame_num)
     //这个条件表达式的作用是，避免当没有帧可以绘制时出现问题
     size_t frame_count_max = frame_num == -1 ? frame_trajectory_.size() : static_cast<size_t>(frame_num);
     size_t frame_count = 0;
-    //REVIEW  查找一下，什么叫做rbegin() ？ rend() 又是啥？
+    //下面的rbegin rend 都是反向迭代器，
     //获得frame_trajectory_中所有的轨迹点
     for(auto itr = frame_trajectory_.rbegin(); itr != frame_trajectory_.rend() && frame_count < frame_count_max; itr++, frame_count++)
     {
@@ -479,9 +479,12 @@ void Viewer::drawKfTraj(Map::Ptr &map)
 
 
     std::vector<KeyFrame::Ptr> kfs = map->getAllKeyFrames();
-    //后面的lambda表达式没有看懂 REVIEW
     //但是这句话应该就是对所有的关键帧按照id进行排序
-    std::sort(kfs.begin(),kfs.end(),[](KeyFrame::Ptr a,KeyFrame::Ptr b)->bool{ return a->id_>b->id_;});
+    std::sort(
+        kfs.begin(),
+        kfs.end(),
+        //[捕获变量](形参列表)-> 函数返回值类型 { 函数体 }
+        [](KeyFrame::Ptr a,KeyFrame::Ptr b)->bool{ return a->id_>b->id_;});
 
     //遍历所有的关键帧
     for(const KeyFrame::Ptr &kf : kfs)
