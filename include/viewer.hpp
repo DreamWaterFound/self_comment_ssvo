@@ -76,7 +76,7 @@ private:
      */
     bool isRequiredStop();
     /**
-     * @brief 设置啥啊? TODO 
+     * @brief 设置变量,当前线程已经结束 
      * 
      */
     void setFinished();
@@ -113,8 +113,8 @@ private:
     /**
      * @brief 绘制当前图像
      * 
-     * @param[in] gl_texture TODO ????
-     * @param[in] image      图像内容
+     * @param[out] gl_texture openGL中的图像纹理
+     * @param[out] image      图像内容
      */
     void drawCurrentImage(pangolin::GlTexture& gl_texture, cv::Mat &image);
     /**
