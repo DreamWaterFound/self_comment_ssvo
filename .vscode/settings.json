@@ -54,6 +54,8 @@
         "utility": "cpp",
         "xstring": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "algorithm": "cpp",
+        "cfenv": "cpp"
     }
 }

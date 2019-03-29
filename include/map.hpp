@@ -110,7 +110,7 @@ private:
 public:
     /**
      * @brief 存储了已经删除的地图点
-     * @detials 为什么我们并没有真正地删除掉他们? TODO 
+     * @detials 为什么我们并没有真正地删除掉他们? TODO ORB中貌似也是类似的操作
      */
     std::set<MapPoint::Ptr> removed_mpts_;
 

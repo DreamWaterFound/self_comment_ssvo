@@ -157,8 +157,7 @@ System::System(std::string config_file,
     log_names.push_back("frame_id");
     log_names.push_back("num_feature_reproj");
     log_names.push_back("stage");
-
-    //step 8 轨迹
+    
     string trace_dir = Config::timeTracingDirectory();
     sysTrace.reset(new TimeTracing("ssvo_trace_system", trace_dir, time_names, log_names));
 }
